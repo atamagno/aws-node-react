@@ -1,15 +1,14 @@
 import { Request, Response } from "express";
 import { CreateHouseDto } from "../types/House";
-import { v4 as uuidv4 } from "uuid";
-import houses from "../data/houses";
+import { listHouses, writeHouse } from "../services/houseService";
 
-export const getHouses = (req: Request, res: Response) => {
+export const getHouses = async (req: Request, res: Response) => {
+  const houses = await listHouses();
   res.status(200).json(houses);
 };
 
-export const addHouse = (req: Request, res: Response) => {
+export const addHouse = async (req: Request, res: Response) => {
   const newHouse = req.body as CreateHouseDto;
-  const houseWithId = { id: uuidv4(), ...newHouse };
-  houses.push(houseWithId);
+  const houseWithId = await writeHouse(newHouse);
   res.status(201).json(houseWithId);
 };
