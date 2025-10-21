@@ -1,17 +1,15 @@
 import { Request, Response } from "express";
 import { CreateBidDto } from "../types/Bid";
-import { v4 as uuidv4 } from "uuid";
-import bids from "../data/bids";
+import { listBids, writeBid } from "../services/bidService";
 
-export const getBids = (req: Request, res: Response) => {
-  const { houseId } = req.params;
-  const houseBids = bids.filter(bid => bid.houseId === houseId);
+export const getBids = async (req: Request, res: Response) => {
+  const { houseId } = req.params as { houseId: string };
+  const houseBids = await listBids(houseId);
   res.status(200).json(houseBids);
 };
 
-export const addBid = (req: Request, res: Response) => {
+export const addBid = async (req: Request, res: Response) => {
   const newBid = req.body as CreateBidDto;
-  const bidWithId = { id: uuidv4(), ...newBid };
-  bids.push(bidWithId);
+  const bidWithId = await writeBid(newBid);
   res.status(201).json(bidWithId);
-}
+};
