@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  pAppName:
+    Type: String
+  pEnvironmentName:
+    Type: String
+    Default: dev
+  pGitHash:
+    Type: String
+  pGitBranch:
+    Type: String
+
+Resources:
+  HousesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${pAppName}-${pEnvironmentName}-houses"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  HousesTableName:
+    Description: "Name of the Houses DynamoDB Table"
+    Value: !Ref HousesTable
+    Export:
+      Name: !Sub ${AWS::StackName}-HousesTableName
+
+  HousesTableArn:
+    Description: "ARN of the Houses DynamoDB Table"
+    Value: !GetAtt HousesTable.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-HousesTableArn
+
+  CodeRef:
+    Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
+    Description: Code Reference
+    Export:
+      Name: !Sub ${AWS::StackName}-CodeRef

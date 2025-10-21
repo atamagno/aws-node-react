@@ -1,0 +1,49 @@
+name: Deploy ECR
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Choose development environment to deploy
+        options:
+          - dev
+          - test
+          - prod
+        default: dev
+      region:
+        type: string
+        description: Choose AWS region
+        default: ap-southeast-2
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: "Deploy ECR repository"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.region }}
+
+      - name: Running deploy script for DynamoDB
+        id: deploy-ddb
+        working-directory: ./
+        env:
+          AWS_REGION: ${{ github.event.inputs.region }}
+        run: |
+          chmod u+x deploy.sh
+          ./deploy.sh
