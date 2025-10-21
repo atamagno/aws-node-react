@@ -41,7 +41,7 @@ jobs:
 
       - name: Running deploy script for DynamoDB
         id: deploy-ddb
-        working-directory: ./
+        working-directory: ./backend
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
         run: |
