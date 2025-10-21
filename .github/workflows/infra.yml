@@ -24,6 +24,8 @@ on:
         required: true
         type: string
 
+permissions:
+  id-token: write
 jobs:
   deploy:
     name: "Deploy Infrastructure"
