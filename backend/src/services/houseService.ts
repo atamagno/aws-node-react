@@ -22,9 +22,8 @@ const listHouses = async (): Promise<House[]> => {
   }
 };
 
-const writeHouse = async (house: CreateHouseDto): Promise<House> => {
+const writeHouse = async (newHouse: CreateHouseDto): Promise<House> => {
   try {
-    const newHouse = house;
     const houseWithId = { id: uuidv4(), ...newHouse };
     const params: PutCommandInput = {
       TableName: config.housesTableName,
