@@ -12,7 +12,7 @@ const House = () => {
 
   const { bids, loadingState, addBid } = useBids(house.id);
   
-  if (loadingState != loadingStatus.loaded)
+  if (loadingState !== loadingStatus.loaded)
     return <LoadingIndicator loadingState={loadingState} />
 
   return (

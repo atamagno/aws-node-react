@@ -5,7 +5,7 @@ import type { House } from "../types/House";
 const HouseRow = ({ house }: { house: House }) => {
   const navigate = useNavigate();
   return (
-    <tr onClick={() => navigate(`/house/`, { state: { house } })}>
+    <tr onClick={() => navigate(`/house`, { state: { house } })}>
       <td>{house.address}</td>
       <td>{house.country}</td>
       {house.price && (
