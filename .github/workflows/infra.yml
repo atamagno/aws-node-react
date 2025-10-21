@@ -1,4 +1,4 @@
-name: Deploy ECR
+name: Deploy Infra
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ on:
 
 jobs:
   deploy:
-    name: "Deploy ECR repository"
+    name: "Deploy Infrastructure"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository code
