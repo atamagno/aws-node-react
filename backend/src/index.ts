@@ -1,11 +1,8 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import healthRoutes from "./routes/health";
 import houseRoutes from "./routes/house";
 import bidRoutes from "./routes/bid";
-
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;

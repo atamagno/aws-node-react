@@ -25,6 +25,18 @@ Resources:
           KeyType: "HASH"
       BillingMode: PAY_PER_REQUEST
 
+  BidsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${pAppName}-${pEnvironmentName}-bids"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
 Outputs:
   HousesTableName:
     Description: "Name of the Houses DynamoDB Table"
@@ -37,6 +49,18 @@ Outputs:
     Value: !GetAtt HousesTable.Arn
     Export:
       Name: !Sub ${AWS::StackName}-HousesTableArn
+
+  BidsTableName:
+    Description: "Name of the Bids DynamoDB Table"
+    Value: !Ref BidsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-BidsTableName
+
+  BidsTableArn:
+    Description: "ARN of the Bids DynamoDB Table"
+    Value: !GetAtt BidsTable.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-BidsTableArn
 
   CodeRef:
     Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
