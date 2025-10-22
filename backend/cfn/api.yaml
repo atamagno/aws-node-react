@@ -7,6 +7,8 @@ Parameters:
   pEnvironmentName:
     Type: String
     Default: dev
+  pLambdaArn:
+    Type: String
   pGitHash:
     Type: String
   pGitBranch:
@@ -28,10 +30,7 @@ Resources:
       Integration:
         Type: AWS
         IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub:
-            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-            - { LambdaArn: !GetAtt LambdaFunctionApi.Arn }
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${pLambdaArn}/invocations
         IntegrationResponses:
           - StatusCode: 200
         RequestTemplates:
@@ -53,45 +52,10 @@ Resources:
       DeploymentId: !Ref "ApiGatewayDeployment"
       StageName: !Sub "${pEnvironmentName}"
 
-  LambdaFunctionRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !Sub "${pAppName}-${pEnvironmentName}-api-lambda-role"
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service:
-                - "lambda.amazonaws.com"
-            Action:
-              - "sts:AssumeRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-
-  LambdaFunctionApi:
-    Type: "AWS::Lambda::Function"
-    Properties:
-      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-api-lambda"
-      Runtime: "nodejs22.x"
-      Handler: "index.handler"
-      Role: !GetAtt LambdaFunctionRole.Arn
-      Code:
-        ZipFile: |
-          export const handler = async (event) => {
-            // TODO implement
-            const response = {
-              statusCode: 200,
-              body: JSON.stringify('Hello from Lambda!'),
-            };
-            return response;
-          };
-
   LambdaPermissionApiGateway:
     Type: "AWS::Lambda::Permission"
-    DependsOn: LambdaFunctionApi
     Properties:
-      FunctionName: !GetAtt LambdaFunctionApi.Arn
+      FunctionName: !Sub "${pLambdaArn}"
       Action: "lambda:InvokeFunction"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/"
       Principal: "apigateway.amazonaws.com"
@@ -101,15 +65,3 @@ Outputs:
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${pEnvironmentName}"
     Export:
       Name: !Sub ${AWS::StackName}-RestApiUrl
-
-  ApiFunctionName:
-    Description: "Name of the API Lambda Function"
-    Value: !Ref LambdaFunctionApi
-    Export:
-      Name: !Sub ${AWS::StackName}-ApiFunctionName
-
-  ApiFunctionArn:
-    Description: "ARN of the API Lambda Function"
-    Value: !GetAtt LambdaFunctionApi.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-ApiFunctionArn

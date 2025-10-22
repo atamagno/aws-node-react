@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  pAppName:
+    Type: String
+  pEnvironmentName:
+    Type: String
+    Default: dev
+  pGitHash:
+    Type: String
+  pGitBranch:
+    Type: String
+
+Resources:
+  LambdaFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${pAppName}-${pEnvironmentName}-api-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+
+  LambdaFunctionApi:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-api-lambda"
+      Runtime: "nodejs22.x"
+      Handler: "index.handler"
+      Role: !GetAtt LambdaFunctionRole.Arn
+      Code:
+        ZipFile: |
+          export const handler = async (event) => {
+            // TODO implement
+            const response = {
+              statusCode: 200,
+              body: JSON.stringify('Hello from Lambda!'),
+            };
+            return response;
+          };
+
+Outputs:
+  ApiFunctionName:
+    Description: "Name of the API Lambda Function"
+    Value: !Ref LambdaFunctionApi
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiFunctionName
+
+  ApiFunctionArn:
+    Description: "ARN of the API Lambda Function"
+    Value: !GetAtt LambdaFunctionApi.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiFunctionArn

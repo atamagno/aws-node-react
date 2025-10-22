@@ -45,7 +45,23 @@ if [ -z "${GIT_BRANCH}" ]; then
   echo "Using default git branch of hash"
 fi
 
-# Configuration
+getStackOutputs () {
+  stackOutputs=$(aws cloudformation describe-stacks --region ${AWS_REGION} --stack-name ${1} | jq -r '.Stacks[0].Outputs | map({key:.OutputKey,value:.OutputValue})| .[] | "Stack_" + .key + "=" + .value' | tr -d '\r')
+  if [[ -z "$stackOutputs" ]]; then
+    if [ "${2}" = "noexit" ]; then
+      return
+    fi
+      echo "Failed to retrieve stack outputs from stack (${1})"
+      echo "Aborting pipeline"
+      exit 255
+  else
+    echo "Successfully retrieved values from ${1}"
+    for key in ${stackOutputs}; do
+      export ${key}
+    done
+  fi
+}
+
 APP_NAME="aws-node-react"
 ENVIRONMENT_NAME="${ENVIRONMENT_NAME:-dev}"
 PREFIX="${APP_NAME}-${ENVIRONMENT_NAME}-"
@@ -54,11 +70,13 @@ IMAGE_TAG="${GIT_HASH:-latest}"
 
 DDB_CFN_TEMPLATE="cfn/ddb.yaml"
 DDB_STACK="${PREFIX}ddb-stack"
+LAMBDA_CFN_TEMPLATE="cfn/lambda.yaml"
+LAMBDA_STACK="${PREFIX}lambda-stack"
 API_CFN_TEMPLATE="cfn/api.yaml"
 API_STACK="${PREFIX}api-stack"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 
-echo "Deploying DynamoDB Table"
+echo "*** Deploying DynamoDB Table ***"
 
 aws cloudformation deploy \
   --stack-name $DDB_STACK \
@@ -73,7 +91,26 @@ aws cloudformation deploy \
   --tags $CFN_TAGS \
   --region $AWS_REGION
 
-echo "Deploying API Gateway"
+echo "*** Deploying Lambda Function ***"
+
+aws cloudformation deploy \
+  --stack-name $LAMBDA_STACK \
+  --template-file $LAMBDA_CFN_TEMPLATE \
+  --parameter-overrides \
+      pAppName=$APP_NAME \
+      pEnvironmentName=$ENVIRONMENT_NAME \
+      pGitBranch=$GIT_BRANCH \
+      pGitHash=$GIT_HASH \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
+  --tags $CFN_TAGS \
+  --region $AWS_REGION
+
+# Retrieve Lambda ARN from Lambda stack outputs
+getStackOutputs $LAMBDA_STACK
+LAMBDA_ARN=$Stack_ApiFunctionArn
+
+echo "*** Deploying API Gateway ***"
 
 aws cloudformation deploy \
   --stack-name $API_STACK \
@@ -81,6 +118,7 @@ aws cloudformation deploy \
   --parameter-overrides \
       pAppName=$APP_NAME \
       pEnvironmentName=$ENVIRONMENT_NAME \
+      pLambdaArn=$LAMBDA_ARN \
       pGitBranch=$GIT_BRANCH \
       pGitHash=$GIT_HASH \
   --capabilities CAPABILITY_NAMED_IAM \
