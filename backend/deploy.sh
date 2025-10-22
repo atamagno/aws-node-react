@@ -54,6 +54,8 @@ IMAGE_TAG="${GIT_HASH:-latest}"
 
 DDB_CFN_TEMPLATE="cfn/ddb.yaml"
 DDB_STACK="${PREFIX}ddb-stack"
+API_CFN_TEMPLATE="cfn/api.yaml"
+API_STACK="${PREFIX}api-stack"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 
 echo "Deploying DynamoDB Table"
@@ -61,6 +63,21 @@ echo "Deploying DynamoDB Table"
 aws cloudformation deploy \
   --stack-name $DDB_STACK \
   --template-file $DDB_CFN_TEMPLATE \
+  --parameter-overrides \
+      pAppName=$APP_NAME \
+      pEnvironmentName=$ENVIRONMENT_NAME \
+      pGitBranch=$GIT_BRANCH \
+      pGitHash=$GIT_HASH \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
+  --tags $CFN_TAGS \
+  --region $AWS_REGION
+
+echo "Deploying API Gateway"
+
+aws cloudformation deploy \
+  --stack-name $API_STACK \
+  --template-file $API_CFN_TEMPLATE \
   --parameter-overrides \
       pAppName=$APP_NAME \
       pEnvironmentName=$ENVIRONMENT_NAME \
