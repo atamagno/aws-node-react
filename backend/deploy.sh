@@ -1,4 +1,7 @@
 #!/bin/bash
+
+source ./utils.sh
+
 START_TIME=$(date -R)
 GLOBAL_OVERRIDES=$1
 
@@ -45,36 +48,35 @@ if [ -z "${GIT_BRANCH}" ]; then
   echo "Using default git branch of hash"
 fi
 
-getStackOutputs () {
-  stackOutputs=$(aws cloudformation describe-stacks --region ${AWS_REGION} --stack-name ${1} | jq -r '.Stacks[0].Outputs | map({key:.OutputKey,value:.OutputValue})| .[] | "Stack_" + .key + "=" + .value' | tr -d '\r')
-  if [[ -z "$stackOutputs" ]]; then
-    if [ "${2}" = "noexit" ]; then
-      return
-    fi
-      echo "Failed to retrieve stack outputs from stack (${1})"
-      echo "Aborting pipeline"
-      exit 255
-  else
-    echo "Successfully retrieved values from ${1}"
-    for key in ${stackOutputs}; do
-      export ${key}
-    done
-  fi
-}
-
 APP_NAME="aws-node-react"
 ENVIRONMENT_NAME="${ENVIRONMENT_NAME:-dev}"
 PREFIX="${APP_NAME}-${ENVIRONMENT_NAME}-"
 POSTFIX="-${ACCOUNT_ID}-${AWS_REGION}"
 IMAGE_TAG="${GIT_HASH:-latest}"
 
+S3_DEPLOYMENT_BUCKET_NAME="${PREFIX}deployment${POSTFIX}"
+
 DDB_CFN_TEMPLATE="cfn/ddb.yaml"
 DDB_STACK="${PREFIX}ddb-stack"
-LAMBDA_CFN_TEMPLATE="cfn/lambda.yaml"
-LAMBDA_STACK="${PREFIX}lambda-stack"
 API_CFN_TEMPLATE="cfn/api.yaml"
 API_STACK="${PREFIX}api-stack"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
+
+echo "*** Starting build and deployment ***"
+
+echo "AWS_REGION       : ${AWS_REGION}"
+echo "ENVIRONMENT_NAME : ${ENVIRONMENT_NAME}"
+echo "S3_BUCKET_NAME   : ${S3_DEPLOYMENT_BUCKET_NAME}"
+echo "GIT BRANCH       : ${GIT_BRANCH}"
+echo "GIT HASH         : ${GIT_HASH}"
+
+echo "*** Building code ***"
+npm install
+npm run build
+
+# Create S3 Bucket to store code
+echo "*** Creating S3 Bucket ***"
+aws s3api head-bucket --bucket "${S3_DEPLOYMENT_BUCKET_NAME}" 2>/dev/null || aws s3 mb s3://${S3_DEPLOYMENT_BUCKET_NAME}
 
 echo "*** Deploying DynamoDB Table ***"
 
@@ -89,42 +91,35 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM \
   --no-fail-on-empty-changeset \
   --tags $CFN_TAGS \
-  --region $AWS_REGION
+  --region ${AWS_REGION}
 
-echo "*** Deploying Lambda Function ***"
+checkIfFailed
 
-aws cloudformation deploy \
-  --stack-name $LAMBDA_STACK \
-  --template-file $LAMBDA_CFN_TEMPLATE \
-  --parameter-overrides \
-      pAppName=$APP_NAME \
-      pEnvironmentName=$ENVIRONMENT_NAME \
-      pGitBranch=$GIT_BRANCH \
-      pGitHash=$GIT_HASH \
+echo "*** Deploying API Gateway and Lambda Functions ***"
+
+sam.cmd package \
+  --template-file ${API_CFN_TEMPLATE} \
+  --output-template-file cfn/api-packaged.yaml \
+  --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
+  --s3-prefix api \
+  --region ${AWS_REGION}
+
+checkIfFailed
+
+sam.cmd deploy --template-file cfn/api-packaged.yaml \
+  --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
+  --s3-prefix api \
+  --stack-name ${API_STACK} \
   --capabilities CAPABILITY_NAMED_IAM \
+  --region ${AWS_REGION}  \
   --no-fail-on-empty-changeset \
-  --tags $CFN_TAGS \
-  --region $AWS_REGION
-
-# Retrieve Lambda ARN from Lambda stack outputs
-getStackOutputs $LAMBDA_STACK
-LAMBDA_ARN=$Stack_ApiFunctionArn
-
-echo "*** Deploying API Gateway ***"
-
-aws cloudformation deploy \
-  --stack-name $API_STACK \
-  --template-file $API_CFN_TEMPLATE \
   --parameter-overrides \
-      pAppName=$APP_NAME \
-      pEnvironmentName=$ENVIRONMENT_NAME \
-      pLambdaArn=$LAMBDA_ARN \
-      pGitBranch=$GIT_BRANCH \
-      pGitHash=$GIT_HASH \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --no-fail-on-empty-changeset \
-  --tags $CFN_TAGS \
-  --region $AWS_REGION
+    ParameterKey=pAppName,ParameterValue=${APP_NAME} \
+    ParameterKey=pEnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \
+    ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
+    ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
+
+checkIfFailed
 
 END_TIME=$(date -R)
 
