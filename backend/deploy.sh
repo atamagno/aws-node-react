@@ -116,6 +116,7 @@ sam deploy --template-file cfn/api-packaged.yaml \
   --parameter-overrides \
     ParameterKey=pAppName,ParameterValue=${APP_NAME} \
     ParameterKey=pEnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \
+    ParameterKey=pDdbStackName,ParameterValue=${DDB_STACK} \
     ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
     ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
 
