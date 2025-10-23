@@ -97,7 +97,7 @@ checkIfFailed
 
 echo "*** Deploying API Gateway and Lambda Functions ***"
 
-sam.cmd package \
+sam package \
   --template-file ${API_CFN_TEMPLATE} \
   --output-template-file cfn/api-packaged.yaml \
   --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
@@ -106,7 +106,7 @@ sam.cmd package \
 
 checkIfFailed
 
-sam.cmd deploy --template-file cfn/api-packaged.yaml \
+sam deploy --template-file cfn/api-packaged.yaml \
   --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
   --s3-prefix api \
   --stack-name ${API_STACK} \
