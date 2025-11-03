@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
-    "@serverless/utils": "^6.15.0",
     "@types/aws-lambda": "^8.10.156",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -28,6 +27,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "jiti": "^2.6.1",
+    "js-yaml": "^4.1.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
@@ -38,6 +38,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.913.0",
     "@aws-sdk/lib-dynamodb": "^3.913.0",
+    "@serverless/utils": "^6.15.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
