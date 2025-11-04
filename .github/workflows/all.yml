@@ -1,0 +1,33 @@
+name: Deploy All
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Choose development environment to deploy
+        options:
+          - dev
+          - test
+          - prod
+        default: dev
+      region:
+        type: string
+        description: Choose AWS region
+        default: ap-southeast-2
+
+jobs:
+  deploy-infra:
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
+      region: ${{ github.event.inputs.region }}
+
+  deploy-frontend:
+    uses: ./.github/workflows/frontend.yml
+    needs: deploy-infra
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
+      region: ${{ github.event.inputs.region }}
