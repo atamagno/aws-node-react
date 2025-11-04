@@ -25,7 +25,7 @@ getStackOutputs ${API_STACK}
 FRONTEND_BUCKET_NAME=$Stack_FrontendBucketName
 FRONTEND_DISTRIBUTION_ID=$Stack_FrontendDistributionId
 #VITE_REST_API_URL=$Stack_RestApiUrl
-VITE_REST_API_URL=http://localhost:3000
+export VITE_REST_API_URL=http://localhost:3000
 
 echo "*** Building code ***"
 npm install
