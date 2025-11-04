@@ -19,8 +19,13 @@ PREFIX="${APP_NAME}-${ENVIRONMENT_NAME}-"
 FRONTEND_STACK="${PREFIX}frontend-stack"
 getStackOutputs ${FRONTEND_STACK}
 
+API_STACK="${PREFIX}api-stack"
+getStackOutputs ${API_STACK}
+
 FRONTEND_BUCKET_NAME=$Stack_FrontendBucketName
 FRONTEND_DISTRIBUTION_ID=$Stack_FrontendDistributionId
+#VITE_REST_API_URL=$Stack_RestApiUrl
+VITE_REST_API_URL=http://localhost:3000
 
 echo "*** Building code ***"
 npm install

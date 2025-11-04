@@ -53,57 +53,57 @@ echo "S3_BUCKET_NAME   : ${S3_DEPLOYMENT_BUCKET_NAME}"
 echo "GIT BRANCH       : ${GIT_BRANCH}"
 echo "GIT HASH         : ${GIT_HASH}"
 
-# echo "*** Building code ***"
-# npm install
-# npm run build
+echo "*** Building code ***"
+npm install
+npm run build
 
-# # Create S3 Bucket to store code
-# echo "*** Creating S3 Bucket ***"
-# aws s3api head-bucket --bucket "${S3_DEPLOYMENT_BUCKET_NAME}" 2>/dev/null || aws s3 mb s3://${S3_DEPLOYMENT_BUCKET_NAME}
+# Create S3 Bucket to store code
+echo "*** Creating S3 Bucket ***"
+aws s3api head-bucket --bucket "${S3_DEPLOYMENT_BUCKET_NAME}" 2>/dev/null || aws s3 mb s3://${S3_DEPLOYMENT_BUCKET_NAME}
 
-# echo "*** Deploying DynamoDB Table ***"
+echo "*** Deploying DynamoDB Table ***"
 
-# aws cloudformation deploy \
-#   --stack-name $DDB_STACK \
-#   --template-file $DDB_CFN_TEMPLATE \
-#   --parameter-overrides \
-#       pAppName=$APP_NAME \
-#       pEnvironmentName=$ENVIRONMENT_NAME \
-#       pGitBranch=$GIT_BRANCH \
-#       pGitHash=$GIT_HASH \
-#   --capabilities CAPABILITY_NAMED_IAM \
-#   --no-fail-on-empty-changeset \
-#   --tags $CFN_TAGS \
-#   --region ${AWS_REGION}
+aws cloudformation deploy \
+  --stack-name $DDB_STACK \
+  --template-file $DDB_CFN_TEMPLATE \
+  --parameter-overrides \
+      pAppName=$APP_NAME \
+      pEnvironmentName=$ENVIRONMENT_NAME \
+      pGitBranch=$GIT_BRANCH \
+      pGitHash=$GIT_HASH \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
+  --tags $CFN_TAGS \
+  --region ${AWS_REGION}
 
-# checkIfFailed
+checkIfFailed
 
-# echo "*** Deploying API Gateway and Lambda Functions ***"
+echo "*** Deploying API Gateway and Lambda Functions ***"
 
-# sam package \
-#   --template-file ${API_CFN_TEMPLATE} \
-#   --output-template-file cfn/api-packaged.yaml \
-#   --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
-#   --s3-prefix api \
-#   --region ${AWS_REGION}
+sam package \
+  --template-file ${API_CFN_TEMPLATE} \
+  --output-template-file cfn/api-packaged.yaml \
+  --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
+  --s3-prefix api \
+  --region ${AWS_REGION}
 
-# checkIfFailed
+checkIfFailed
 
-# sam deploy --template-file cfn/api-packaged.yaml \
-#   --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
-#   --s3-prefix api \
-#   --stack-name ${API_STACK} \
-#   --capabilities CAPABILITY_NAMED_IAM \
-#   --region ${AWS_REGION}  \
-#   --no-fail-on-empty-changeset \
-#   --parameter-overrides \
-#     ParameterKey=pAppName,ParameterValue=${APP_NAME} \
-#     ParameterKey=pEnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \
-#     ParameterKey=pDdbStackName,ParameterValue=${DDB_STACK} \
-#     ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
-#     ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
+sam deploy --template-file cfn/api-packaged.yaml \
+  --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
+  --s3-prefix api \
+  --stack-name ${API_STACK} \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --region ${AWS_REGION}  \
+  --no-fail-on-empty-changeset \
+  --parameter-overrides \
+    ParameterKey=pAppName,ParameterValue=${APP_NAME} \
+    ParameterKey=pEnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \
+    ParameterKey=pDdbStackName,ParameterValue=${DDB_STACK} \
+    ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
+    ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
 
-# checkIfFailed
+checkIfFailed
 
 echo "*** Deploying Frontend Stack ***"
 
