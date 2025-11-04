@@ -4,7 +4,7 @@ setVariablesFromParameters() {
   ######## Get script parameters separated by ; and set them as global variables #########
   OLD_IFS=$IFS # backup original separator (new line usually) so we can revert it as other code might rely on it
   export IFS=";"
-  ALLOWED_KEYS=("AWS_REGION" "ACCOUNT_ID" "ENVIRONMENT_NAME" "IMAGE_TAG")
+  ALLOWED_KEYS=("AWS_REGION" "ACCOUNT_ID" "ENVIRONMENT_NAME" "IMAGE_TAG" "DEPLOY_SPECIFIC" "DEPLOY_DDB" "DEPLOY_API" "DEPLOY_FE")
   for keyVal in $GLOBAL_OVERRIDES; do
     KEY=${keyVal%=*}
     VALUE=${keyVal#*=}

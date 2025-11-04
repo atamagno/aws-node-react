@@ -31,6 +31,10 @@ Resources:
     Properties:
       Name: !Sub "${pAppName}-${pEnvironmentName}-api"
       StageName: !Sub ${pEnvironmentName}
+      # Cors:
+      #   AllowOrigin: "'*'"
+      #   AllowMethods: "'OPTIONS,GET,POST,PUT,PATCH,DELETE'"
+      #   AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
 
   HousesLambdaRole:
     Type: "AWS::IAM::Role"

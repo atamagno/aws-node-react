@@ -12,8 +12,8 @@ const useHouses = () => {
       setLoadingState(loadingStatus.isLoading);
       try {
         const response = await fetch(`${config.restApiUrl}/house`);
-        const houses = await response.json();
-        setHouses(houses);
+        const jsonResponse = await response.json();
+        setHouses(jsonResponse.houses);
         setLoadingState(loadingStatus.loaded);
       } catch {
         setLoadingState(loadingStatus.hasErrored);
