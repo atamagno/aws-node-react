@@ -22,8 +22,8 @@ Globals:
     Handler: index.handler
     Environment:
       Variables:
-        HOUSES_TABLE_NAME:
-          Fn::ImportValue: !Sub ${pDdbStackName}-HousesTableName
+        THINGS_TABLE_NAME:
+          Fn::ImportValue: !Sub ${pDdbStackName}-ThingsTableName
 
 Resources:
   ApiGatewayRestApi:
@@ -32,10 +32,10 @@ Resources:
       Name: !Sub "${pAppName}-${pEnvironmentName}-api"
       StageName: !Sub ${pEnvironmentName}
 
-  HousesLambdaRole:
+  ThingsLambdaRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !Sub "${pAppName}-${pEnvironmentName}-houses-lambda-role"
+      RoleName: !Sub "${pAppName}-${pEnvironmentName}-things-lambda-role"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -55,43 +55,43 @@ Resources:
                   - dynamodb:PutItem
                   - dynamodb:Scan
                 Resource:
-                  - Fn::ImportValue: !Sub ${pDdbStackName}-HousesTableArn
+                  - Fn::ImportValue: !Sub ${pDdbStackName}-ThingsTableArn
                   - !Join [
                       "/",
                       [
-                        Fn::ImportValue: !Sub "${pDdbStackName}-HousesTableArn",
+                        Fn::ImportValue: !Sub "${pDdbStackName}-ThingsTableArn",
                         "index/*",
                       ],
                     ]
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 
-  GetHousesFunction:
+  GetThingsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-get-houses-lambda"
-      CodeUri: ../dist/lambdas/house/getList
-      Role: !GetAtt HousesLambdaRole.Arn
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-get-things-lambda"
+      CodeUri: ../dist/lambdas/thing/getList
+      Role: !GetAtt ThingsLambdaRole.Arn
       Events:
         RestApiEvent:
           Type: Api
           Properties:
             Method: GET
-            Path: /house
+            Path: /thing
             RestApiId: !Ref ApiGatewayRestApi
 
-  AddHouseFunction:
+  AddThingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-add-house-lambda"
-      CodeUri: ../dist/lambdas/house/add
-      Role: !GetAtt HousesLambdaRole.Arn
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-add-thing-lambda"
+      CodeUri: ../dist/lambdas/thing/add
+      Role: !GetAtt ThingsLambdaRole.Arn
       Events:
         RestApiEvent:
           Type: Api
           Properties:
             Method: POST
-            Path: /house
+            Path: /thing
             RestApiId: !Ref ApiGatewayRestApi
 
 Outputs:
@@ -100,35 +100,35 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-RestApiUrl
 
-  HousesLambdaRoleArn:
-    Description: "ARN of the Houses Lambda Role"
-    Value: !GetAtt HousesLambdaRole.Arn
+  ThingsLambdaRoleArn:
+    Description: "ARN of the Things Lambda Role"
+    Value: !GetAtt ThingsLambdaRole.Arn
     Export:
-      Name: !Sub ${AWS::StackName}-HousesLambdaRoleArn
+      Name: !Sub ${AWS::StackName}-ThingsLambdaRoleArn
 
-  GetHousesFunctionName:
-    Description: "Name of the Get Houses Lambda Function"
-    Value: !Ref GetHousesFunction
+  GetThingsFunctionName:
+    Description: "Name of the Get Things Lambda Function"
+    Value: !Ref GetThingsFunction
     Export:
-      Name: !Sub ${AWS::StackName}-GetHousesFunctionName
+      Name: !Sub ${AWS::StackName}-GetThingsFunctionName
 
-  GetHousesFunctionNameArn:
-    Description: "ARN of the Get Houses Lambda Function"
-    Value: !GetAtt GetHousesFunction.Arn
+  GetThingsFunctionNameArn:
+    Description: "ARN of the Get Things Lambda Function"
+    Value: !GetAtt GetThingsFunction.Arn
     Export:
-      Name: !Sub ${AWS::StackName}-GetHousesFunctionNameArn
+      Name: !Sub ${AWS::StackName}-GetThingsFunctionNameArn
 
-  AddHouseFunctionName:
-    Description: "Name of the Add House Lambda Function"
-    Value: !Ref AddHouseFunction
+  AddThingFunctionName:
+    Description: "Name of the Add Thing Lambda Function"
+    Value: !Ref AddThingFunction
     Export:
-      Name: !Sub ${AWS::StackName}-AddHouseFunctionName
+      Name: !Sub ${AWS::StackName}-AddThingFunctionName
 
-  AddHouseFunctionNameArn:
-    Description: "ARN of the Add House Lambda Function"
-    Value: !GetAtt AddHouseFunction.Arn
+  AddThingFunctionNameArn:
+    Description: "ARN of the Add Thing Lambda Function"
+    Value: !GetAtt AddThingFunction.Arn
     Export:
-      Name: !Sub ${AWS::StackName}-AddHouseFunctionNameArn
+      Name: !Sub ${AWS::StackName}-AddThingFunctionNameArn
 
   CodeRef:
     Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]

@@ -12,10 +12,12 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --fix",
     "check-format": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "cd .. && husky backend/.husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.0",
     "@types/aws-lambda": "^8.10.156",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -26,8 +28,10 @@
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
     "jiti": "^2.6.1",
     "js-yaml": "^4.1.0",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
@@ -43,5 +47,11 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "uuid": "^13.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

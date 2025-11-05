@@ -1,8 +1,9 @@
-import express from "express";
 import cors from "cors";
+
+import express from "express";
+
+import thingRoutes from "./routes/thing";
 import healthRoutes from "./routes/health";
-import houseRoutes from "./routes/house";
-import bidRoutes from "./routes/bid";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,11 +12,10 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/", healthRoutes);
-app.use("/", houseRoutes);
-app.use("/", bidRoutes);
+app.use("/", thingRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Houses API, Node.js with TypeScript and Express!");
+  res.send("Things API, Node.js with TypeScript and Express!");
 });
 
 app.listen(port, () => {
