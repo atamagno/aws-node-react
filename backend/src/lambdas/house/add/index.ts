@@ -3,6 +3,7 @@ import type {
   APIGatewayProxyHandler,
   APIGatewayProxyResult,
 } from "aws-lambda";
+
 import { CreateHouseDto } from "../../../types/House";
 import { writeHouse } from "../../../services/houseService";
 

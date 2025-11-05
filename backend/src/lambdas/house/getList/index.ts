@@ -3,6 +3,7 @@ import type {
   APIGatewayProxyHandler,
   APIGatewayProxyResult,
 } from "aws-lambda";
+
 import { listHouses } from "../../../services/houseService";
 
 export const handler: APIGatewayProxyHandler = async (

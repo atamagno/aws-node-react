@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { getHouses, addHouse } from "../controllers/houseController";
+
+import { addHouse, getHouses } from "../controllers/houseController";
 
 const router = Router();
 

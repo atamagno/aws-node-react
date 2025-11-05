@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+
 import { CreateHouseDto } from "../types/House";
 import { listHouses, writeHouse } from "../services/houseService";
 

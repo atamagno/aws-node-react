@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { getBids, addBid } from "../controllers/bidController";
+
+import { addBid, getBids } from "../controllers/bidController";
 
 const router = Router();
 

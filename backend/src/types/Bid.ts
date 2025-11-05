@@ -5,4 +5,4 @@ export interface Bid {
   amount: number;
 }
 
-export type CreateBidDto = Omit<Bid, 'id'>;
+export type CreateBidDto = Omit<Bid, "id">;

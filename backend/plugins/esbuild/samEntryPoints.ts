@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
 import { readFileSync } from "fs";
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const cloudFormationSchema = require("@serverless/utils/cloudformation-schema");
 

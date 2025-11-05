@@ -1,13 +1,15 @@
-import { CreateHouseDto, House } from "../types/House";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   PutCommand,
   PutCommandInput,
   ScanCommand,
   ScanCommandInput,
 } from "@aws-sdk/lib-dynamodb";
-import { v4 as uuidv4 } from "uuid";
-import docClient from "../lib/dynamodb/client";
+
 import config from "../config";
+import docClient from "../lib/dynamodb/client";
+import { CreateHouseDto, House } from "../types/House";
 
 const listHouses = async (): Promise<House[]> => {
   try {

@@ -1,8 +1,10 @@
-import express from "express";
 import cors from "cors";
-import healthRoutes from "./routes/health";
-import houseRoutes from "./routes/house";
+
+import express from "express";
+
 import bidRoutes from "./routes/bid";
+import houseRoutes from "./routes/house";
+import healthRoutes from "./routes/health";
 
 const app = express();
 const port = process.env.PORT || 3000;
