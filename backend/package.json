@@ -13,7 +13,7 @@
     "lint:fix": "eslint . --fix",
     "check-format": "prettier --check .",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "cd .. && husky backend/.husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
