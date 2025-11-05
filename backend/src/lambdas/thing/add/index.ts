@@ -4,13 +4,15 @@ import type {
   APIGatewayProxyResult,
 } from "aws-lambda";
 
-import { listHouses } from "../../../services/houseService";
+import { CreateThingDto } from "../../../types/Thing";
+import { writeThing } from "../../../services/thingService";
 
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log("Get houses event:", event);
-  const houses = await listHouses();
+  console.log("Add thing event:", event);
+  const newThing = JSON.parse(event.body || "{}") as CreateThingDto;
+  const thingWithId = await writeThing(newThing);
   return {
     statusCode: 200,
     headers: {
@@ -20,7 +22,7 @@ export const handler: APIGatewayProxyHandler = async (
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     },
     body: JSON.stringify({
-      houses,
+      thing: thingWithId,
     }),
   };
 };

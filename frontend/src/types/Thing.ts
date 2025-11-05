@@ -1,5 +1,5 @@
-export interface House {
-  id: string;
+export interface Thing {
+  id: number;
   address: string;
   country: string;
   description: string;
@@ -7,4 +7,4 @@ export interface House {
   photo?: string;
 }
 
-export type CreateHouseDto = Omit<House, "id">;
+export type CreateThingDto = Omit<Thing, "id">;

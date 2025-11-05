@@ -13,22 +13,10 @@ Parameters:
     Type: String
 
 Resources:
-  HousesTable:
+  ThingsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${pAppName}-${pEnvironmentName}-houses"
-      AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "id"
-          KeyType: "HASH"
-      BillingMode: PAY_PER_REQUEST
-
-  BidsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${pAppName}-${pEnvironmentName}-bids"
+      TableName: !Sub "${pAppName}-${pEnvironmentName}-things"
       AttributeDefinitions:
         - AttributeName: "id"
           AttributeType: "S"
@@ -38,29 +26,17 @@ Resources:
       BillingMode: PAY_PER_REQUEST
 
 Outputs:
-  HousesTableName:
-    Description: "Name of the Houses DynamoDB Table"
-    Value: !Ref HousesTable
+  ThingsTableName:
+    Description: "Name of the Things DynamoDB Table"
+    Value: !Ref ThingsTable
     Export:
-      Name: !Sub ${AWS::StackName}-HousesTableName
+      Name: !Sub ${AWS::StackName}-ThingsTableName
 
-  HousesTableArn:
-    Description: "ARN of the Houses DynamoDB Table"
-    Value: !GetAtt HousesTable.Arn
+  ThingsTableArn:
+    Description: "ARN of the Things DynamoDB Table"
+    Value: !GetAtt ThingsTable.Arn
     Export:
-      Name: !Sub ${AWS::StackName}-HousesTableArn
-
-  BidsTableName:
-    Description: "Name of the Bids DynamoDB Table"
-    Value: !Ref BidsTable
-    Export:
-      Name: !Sub ${AWS::StackName}-BidsTableName
-
-  BidsTableArn:
-    Description: "ARN of the Bids DynamoDB Table"
-    Value: !GetAtt BidsTable.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-BidsTableArn
+      Name: !Sub ${AWS::StackName}-ThingsTableArn
 
   CodeRef:
     Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]

@@ -1,6 +1,6 @@
-import { House } from "../types/House";
+import { Thing } from "../types/Thing";
 
-const houses: House[] = [
+const things: Thing[] = [
   {
     id: "1",
     address: "12 Valley of Kings, Geneva",
@@ -15,7 +15,7 @@ const houses: House[] = [
     address: "89 Road of Forks, Bern",
     country: "Switzerland",
     description:
-      "This impressive family home, which dates back to approximately 1840, offers original period features throughout and is set back from the road with off street parking for up to six cars and an original Coach House, which has been incorporated into the main house to provide further accommodation. ",
+      "This impressive family home, which dates back to approximately 1840, offers original period features throughout and is set back from the road with off street parking for up to six cars and an original Coach Thing, which has been incorporated into the main thing to provide further accommodation. ",
     price: 500000,
     photo: "462358",
   },
@@ -24,7 +24,7 @@ const houses: House[] = [
     address: "Grote Hof 12, Amsterdam",
     country: "The Netherlands",
     description:
-      "This house has been designed and built to an impeccable standard offering luxurious and elegant living. The accommodation is arranged over four floors comprising a large entrance hall, living room with tall sash windows, dining room, study and WC on the ground floor.",
+      "This thing has been designed and built to an impeccable standard offering luxurious and elegant living. The accommodation is arranged over four floors comprising a large entrance hall, living room with tall sash windows, dining room, study and WC on the ground floor.",
     price: 200500,
     photo: "259600",
   },
@@ -33,7 +33,7 @@ const houses: House[] = [
     address: "Meel Kade 321, The Hague",
     country: "The Netherlands",
     description:
-      "Discreetly situated a unique two storey period home enviably located on the corner of Krom Road and Recht Road offering seclusion and privacy. The house features a magnificent double height reception room with doors leading directly out onto a charming courtyard garden.",
+      "Discreetly situated a unique two storey period home enviably located on the corner of Krom Road and Recht Road offering seclusion and privacy. The thing features a magnificent double height reception room with doors leading directly out onto a charming courtyard garden.",
     price: 259500,
     photo: "534182",
   },
@@ -48,4 +48,4 @@ const houses: House[] = [
   },
 ];
 
-export default houses;
+export default things;

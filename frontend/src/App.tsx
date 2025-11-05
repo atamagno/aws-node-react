@@ -1,21 +1,18 @@
 import { BrowserRouter, Route, Routes } from "react-router";
+
 import "./App.css";
-import Banner from './components/Banner';
-import House from './components/House';
-import HouseList from './components/HouseList';
+import Thing from "./components/Thing";
+import ThingList from "./components/ThingList";
 
 function App() {
   return (
     <BrowserRouter>
-      <Banner>
-        <div>Providing houses all over the world</div>
-      </Banner>
       <Routes>
-        <Route index element={<HouseList />} />
-        <Route path="house/" element={<House />} />
+        <Route index element={<ThingList />} />
+        <Route path="thing/" element={<Thing />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App;
