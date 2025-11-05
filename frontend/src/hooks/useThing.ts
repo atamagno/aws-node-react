@@ -13,8 +13,8 @@ const useThings = () => {
       setLoadingState(loadingStatus.isLoading);
       try {
         const response = await fetch(`${config.restApiUrl}/thing`);
-        const jsonResponse = await response.json();
-        setThings(jsonResponse.things);
+        const things = await response.json();
+        setThings(things);
         setLoadingState(loadingStatus.loaded);
       } catch {
         setLoadingState(loadingStatus.hasErrored);

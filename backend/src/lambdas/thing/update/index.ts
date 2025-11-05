@@ -4,17 +4,19 @@ import type {
   APIGatewayProxyResult,
 } from "aws-lambda";
 
+import { Thing } from "../../../types/Thing";
 import corsResponseHeaders from "../../../utils";
-import { listThings } from "../../../services/thingService";
+import { updateThing } from "../../../services/thingService";
 
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log("Get thing list event:", event);
-  const things = await listThings();
+  console.log("Update thing event:", event);
+  const newThing = JSON.parse(event.body || "{}") as Thing;
+  const updatedThing = await updateThing(newThing);
   return {
     statusCode: 200,
     headers: corsResponseHeaders,
-    body: JSON.stringify(things),
+    body: JSON.stringify(updatedThing),
   };
 };

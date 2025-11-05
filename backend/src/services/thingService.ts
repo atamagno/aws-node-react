@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  DeleteCommand,
+  DeleteCommandInput,
+  GetCommand,
+  GetCommandInput,
   PutCommand,
   PutCommandInput,
   ScanCommand,
@@ -24,7 +28,7 @@ const listThings = async (): Promise<Thing[]> => {
   }
 };
 
-const writeThing = async (newThing: CreateThingDto): Promise<Thing> => {
+const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
   try {
     const thingWithId = { id: uuidv4(), ...newThing };
     const params: PutCommandInput = {
@@ -39,4 +43,45 @@ const writeThing = async (newThing: CreateThingDto): Promise<Thing> => {
   }
 };
 
-export { listThings, writeThing };
+const getThingById = async (id: string): Promise<Thing | undefined> => {
+  try {
+    const params: GetCommandInput = {
+      TableName: config.thingsTableName,
+      Key: { id },
+    };
+    const result = await docClient.send(new GetCommand(params));
+    return result.Item as Thing | undefined;
+  } catch (error) {
+    console.error("Error fetching thing from DynamoDB:", error);
+    throw error;
+  }
+};
+
+const updateThing = async (updatedThing: Thing): Promise<Thing> => {
+  try {
+    const params: PutCommandInput = {
+      TableName: config.thingsTableName,
+      Item: updatedThing,
+    };
+    await docClient.send(new PutCommand(params));
+    return updatedThing;
+  } catch (error) {
+    console.error("Error writing thing to DynamoDB:", error);
+    throw error;
+  }
+};
+
+const deleteThing = async (id: string): Promise<void> => {
+  try {
+    const params: DeleteCommandInput = {
+      TableName: config.thingsTableName,
+      Key: { id },
+    };
+    await docClient.send(new DeleteCommand(params));
+  } catch (error) {
+    console.error("Error fetching thing from DynamoDB:", error);
+    throw error;
+  }
+};
+
+export { listThings, getThingById, createThing, updateThing, deleteThing };

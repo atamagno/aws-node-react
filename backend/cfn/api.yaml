@@ -52,8 +52,10 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:PutItem
                   - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
                 Resource:
                   - Fn::ImportValue: !Sub ${pDdbStackName}-ThingsTableArn
                   - !Join [
@@ -80,11 +82,25 @@ Resources:
             Path: /thing
             RestApiId: !Ref ApiGatewayRestApi
 
-  AddThingFunction:
+  GetThingByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-add-thing-lambda"
-      CodeUri: ../dist/lambdas/thing/add
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-get-thing-by-id-lambda"
+      CodeUri: ../dist/lambdas/thing/getById
+      Role: !GetAtt ThingsLambdaRole.Arn
+      Events:
+        RestApiEvent:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /thing/{id}
+            RestApiId: !Ref ApiGatewayRestApi
+
+  CreateThingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-create-thing-lambda"
+      CodeUri: ../dist/lambdas/thing/create
       Role: !GetAtt ThingsLambdaRole.Arn
       Events:
         RestApiEvent:
@@ -92,6 +108,34 @@ Resources:
           Properties:
             Method: POST
             Path: /thing
+            RestApiId: !Ref ApiGatewayRestApi
+
+  UpdateThingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-update-thing-lambda"
+      CodeUri: ../dist/lambdas/thing/update
+      Role: !GetAtt ThingsLambdaRole.Arn
+      Events:
+        RestApiEvent:
+          Type: Api
+          Properties:
+            Method: PUT
+            Path: /thing
+            RestApiId: !Ref ApiGatewayRestApi
+
+  DeleteThingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${pAppName}-${pEnvironmentName}-delete-thing-lambda"
+      CodeUri: ../dist/lambdas/thing/delete
+      Role: !GetAtt ThingsLambdaRole.Arn
+      Events:
+        RestApiEvent:
+          Type: Api
+          Properties:
+            Method: DELETE
+            Path: /thing/{id}
             RestApiId: !Ref ApiGatewayRestApi
 
 Outputs:
@@ -118,17 +162,53 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-GetThingsFunctionNameArn
 
-  AddThingFunctionName:
-    Description: "Name of the Add Thing Lambda Function"
-    Value: !Ref AddThingFunction
+  GetThingByIdFunctionName:
+    Description: "Name of the Get Thing By Id Lambda Function"
+    Value: !Ref GetThingByIdFunction
     Export:
-      Name: !Sub ${AWS::StackName}-AddThingFunctionName
+      Name: !Sub ${AWS::StackName}-GetThingByIdFunctionName
 
-  AddThingFunctionNameArn:
-    Description: "ARN of the Add Thing Lambda Function"
-    Value: !GetAtt AddThingFunction.Arn
+  GetThingByIdFunctionNameArn:
+    Description: "ARN of the Get Thing By Id Lambda Function"
+    Value: !GetAtt GetThingByIdFunction.Arn
     Export:
-      Name: !Sub ${AWS::StackName}-AddThingFunctionNameArn
+      Name: !Sub ${AWS::StackName}-GetThingByIdFunctionNameArn
+
+  CreateThingFunctionName:
+    Description: "Name of the Create Thing Lambda Function"
+    Value: !Ref CreateThingFunction
+    Export:
+      Name: !Sub ${AWS::StackName}-CreateThingFunctionName
+
+  CreateThingFunctionNameArn:
+    Description: "ARN of the Create Thing Lambda Function"
+    Value: !GetAtt CreateThingFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-CreateThingFunctionNameArn
+
+  UpdateThingFunctionName:
+    Description: "Name of the Update Thing Lambda Function"
+    Value: !Ref UpdateThingFunction
+    Export:
+      Name: !Sub ${AWS::StackName}-UpdateThingFunctionName
+
+  UpdateThingFunctionNameArn:
+    Description: "ARN of the Update Thing Lambda Function"
+    Value: !GetAtt UpdateThingFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-UpdateThingFunctionNameArn
+
+  DeleteThingFunctionName:
+    Description: "Name of the Delete Thing Lambda Function"
+    Value: !Ref DeleteThingFunction
+    Export:
+      Name: !Sub ${AWS::StackName}-DeleteThingFunctionName
+
+  DeleteThingFunctionNameArn:
+    Description: "ARN of the Delete Thing Lambda Function"
+    Value: !GetAtt DeleteThingFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-DeleteThingFunctionNameArn
 
   CodeRef:
     Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
