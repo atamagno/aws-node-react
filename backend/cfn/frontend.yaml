@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  pAppName:
+    Type: String
+  pEnvironmentName:
+    Type: String
+    Default: dev
+  pGitHash:
+    Type: String
+  pGitBranch:
+    Type: String
+
+Resources:
+  WebAppFrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${pAppName}-${pEnvironmentName}-frontend-${AWS::AccountId}
+      AccessControl: Private
+
+  WebAppFrontendDistributionOac:
+    Type: AWS::CloudFront::OriginAccessControl
+    DependsOn: WebAppFrontendBucket
+    Properties:
+      OriginAccessControlConfig:
+        Description: Default Origin Access Control
+        Name: !Sub ${pAppName}-${pEnvironmentName}-cloudfront-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  WebAppFrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebAppFrontendBucket
+      PolicyDocument:
+        Statement:
+          - Sid: PolicyForCloudFrontPrivateContent
+            Effect: Allow
+            Resource: !Sub ${WebAppFrontendBucket.Arn}/*
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebAppFrontendDistribution}
+            Action: "s3:GetObject*"
+
+  WebAppFrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt WebAppFrontendBucket.DomainName
+            Id: !Sub ${pAppName}-${pEnvironmentName}-distribution-origin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt WebAppFrontendDistributionOac.Id
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        Enabled: true
+        Comment: "Cloudfront Distribution pointing to S3 bucket Web App"
+        DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 501
+            ResponseCode: 501
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods: ["GET", "HEAD", "OPTIONS"]
+          TargetOriginId: !Sub ${pAppName}-${pEnvironmentName}-distribution-origin
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_All
+
+Outputs:
+  FrontendBucketName:
+    Description: "S3 Bucket for Frontend"
+    Value: !Ref WebAppFrontendBucket
+    Export:
+      Name: !Sub ${pAppName}-${pEnvironmentName}-frontend-bucket-name
+
+  FrontendBucketArn:
+    Description: "S3 Bucket ARN for Frontend"
+    Value: !GetAtt WebAppFrontendBucket.Arn
+    Export:
+      Name: !Sub ${pAppName}-${pEnvironmentName}-frontend-bucket-arn
+
+  CloudFrontOriginAccessControlId:
+    Description: "CloudFront Origin Access Control ID"
+    Value: !Ref WebAppFrontendDistributionOac
+    Export:
+      Name: !Sub ${pAppName}-${pEnvironmentName}-frontend-distribution-oai-id
+
+  FrontendDistributionId:
+    Description: "CloudFront Distribution ID"
+    Value: !Ref WebAppFrontendDistribution
+    Export:
+      Name: !Sub ${pAppName}-${pEnvironmentName}-frontend-distribution-id
+
+  FrontendDistributionDomainName:
+    Description: "CloudFront Distribution Domain Name"
+    Value: !GetAtt WebAppFrontendDistribution.DomainName
+    Export:
+      Name: !Sub ${pAppName}-${pEnvironmentName}-frontend-distribution-domain-name
+
+  CodeRef:
+    Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
+    Description: Code Reference
+    Export:
+      Name: !Sub ${AWS::StackName}-CodeRef

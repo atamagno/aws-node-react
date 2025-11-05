@@ -16,6 +16,8 @@ on:
         description: Choose AWS region
         default: ap-southeast-2
 
+permissions:
+  id-token: write
 jobs:
   deploy-infra:
     uses: ./.github/workflows/infra.yml
