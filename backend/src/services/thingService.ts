@@ -79,7 +79,7 @@ const deleteThing = async (id: string): Promise<void> => {
     };
     await docClient.send(new DeleteCommand(params));
   } catch (error) {
-    console.error("Error fetching thing from DynamoDB:", error);
+    console.error("Error deleting thing from DynamoDB:", error);
     throw error;
   }
 };
