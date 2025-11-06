@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 
 import config from "../config/config";
@@ -12,9 +13,8 @@ const useThings = () => {
     const fetchThings = async () => {
       setLoadingState(loadingStatus.isLoading);
       try {
-        const response = await fetch(`${config.restApiUrl}/thing`);
-        const things = await response.json();
-        setThings(things);
+        const response = await axios.get(`${config.restApiUrl}/thing`);
+        setThings(response.data);
         setLoadingState(loadingStatus.loaded);
       } catch {
         setLoadingState(loadingStatus.hasErrored);
