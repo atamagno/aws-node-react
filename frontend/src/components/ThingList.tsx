@@ -12,15 +12,14 @@ const ThingList = () => {
 
   return (
     <>
-      <div className="row mb-2">
-        <h5 className="themeFontColor text-center">Things List</h5>
+      <div>
+        <h5>Things List</h5>
       </div>
       <table className="table table-hover">
         <thead>
           <tr>
-            <th>Address</th>
-            <th>Country</th>
-            <th>Asking Price</th>
+            <th>Id</th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody>
