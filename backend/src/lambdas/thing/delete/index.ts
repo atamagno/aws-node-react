@@ -5,16 +5,17 @@ import type {
 } from "aws-lambda";
 
 import corsResponseHeaders from "../../../utils";
-import { listThings } from "../../../services/thingService";
+import { deleteThing } from "../../../services/thingService";
 
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log("Get thing list event:", event);
-  const things = await listThings();
+  console.log("Deleting thing by id event:", event);
+  const thingId = event.pathParameters?.id as string;
+  await deleteThing(thingId);
   return {
-    statusCode: 200,
+    statusCode: 204,
     headers: corsResponseHeaders,
-    body: JSON.stringify(things),
+    body: "",
   };
 };

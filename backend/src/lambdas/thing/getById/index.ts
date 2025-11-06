@@ -5,16 +5,17 @@ import type {
 } from "aws-lambda";
 
 import corsResponseHeaders from "../../../utils";
-import { listThings } from "../../../services/thingService";
+import { getThingById } from "../../../services/thingService";
 
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log("Get thing list event:", event);
-  const things = await listThings();
+  console.log("Get thing by id event:", event);
+  const thingId = event.pathParameters?.id as string;
+  const thingWithId = await getThingById(thingId);
   return {
     statusCode: 200,
     headers: corsResponseHeaders,
-    body: JSON.stringify(things),
+    body: JSON.stringify(thingWithId),
   };
 };

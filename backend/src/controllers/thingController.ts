@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { CreateThingDto } from "../types/Thing";
-import { listThings, writeThing } from "../services/thingService";
+import { createThing, listThings } from "../services/thingService";
 
 export const getThings = async (req: Request, res: Response) => {
   const things = await listThings();
@@ -10,6 +10,6 @@ export const getThings = async (req: Request, res: Response) => {
 
 export const addThing = async (req: Request, res: Response) => {
   const newThing = req.body as CreateThingDto;
-  const thingWithId = await writeThing(newThing);
+  const thingWithId = await createThing(newThing);
   res.status(201).json(thingWithId);
 };

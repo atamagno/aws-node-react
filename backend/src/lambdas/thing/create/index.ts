@@ -4,25 +4,19 @@ import type {
   APIGatewayProxyResult,
 } from "aws-lambda";
 
+import corsResponseHeaders from "../../../utils";
 import { CreateThingDto } from "../../../types/Thing";
-import { writeThing } from "../../../services/thingService";
+import { createThing } from "../../../services/thingService";
 
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   console.log("Add thing event:", event);
   const newThing = JSON.parse(event.body || "{}") as CreateThingDto;
-  const thingWithId = await writeThing(newThing);
+  const thingWithId = await createThing(newThing);
   return {
     statusCode: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-    },
-    body: JSON.stringify({
-      thing: thingWithId,
-    }),
+    headers: corsResponseHeaders,
+    body: JSON.stringify(thingWithId),
   };
 };
