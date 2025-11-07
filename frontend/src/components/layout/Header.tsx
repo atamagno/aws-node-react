@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router";
+
 const Header = () => {
+  const navigate = useNavigate();
   return (
-    <div>
+    <div onClick={() => navigate("/")}>
       <p>Header</p>
     </div>
   );

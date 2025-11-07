@@ -50,7 +50,6 @@ const getThingById = async (id: string): Promise<Thing | undefined> => {
       Key: { id },
     };
     const result = await docClient.send(new GetCommand(params));
-    console.log("Fetched thing:", result);
     return result.Item as Thing | undefined;
   } catch (error) {
     console.error("Error fetching thing from DynamoDB:", error);

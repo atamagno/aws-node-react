@@ -1,14 +1,28 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+
 import ThingRow from "./ThingRow";
-import useThings from "../hooks/useThing";
+import config from "../config/config";
+import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
-import LoadingIndicator from "./LoadingIndicator";
-import loadingStatus from "../helpers/loadingStatus";
 
 const ThingList = () => {
-  const { things, loadingState } = useThings();
+  const [loading, setLoading] = useState(true);
+  const [things, setThings] = useState<Thing[]>([]);
 
-  if (loadingState !== loadingStatus.loaded)
-    return <LoadingIndicator loadingState={loadingState} />;
+  useEffect(() => {
+    const fetchThings = async () => {
+      setLoading(true);
+      const result = await axios.get(`${config.restApiUrl}/thing`);
+      setThings(result.data);
+      setLoading(false);
+    };
+    fetchThings();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
