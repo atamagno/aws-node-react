@@ -1,6 +1,5 @@
-import { useState } from "react";
-
 import ThingRow from "./ThingRow";
+import ThingAddForm from "./ThingAddForm";
 import ErrorBoundary from "./ErrorBoundary";
 import useThingsData from "../hooks/useThingData";
 import { LoadingStatus } from "../types/LoadingStatus";
@@ -14,18 +13,6 @@ const ThingList = () => {
     updateThing,
     deleteThing,
   } = useThingsData();
-  const [description, setDescription] = useState("");
-
-  const [isAdding, setIsAdding] = useState(false);
-
-  const add = () => {
-    setIsAdding(true);
-    const newThing = { description };
-    createThing(newThing, () => {
-      setIsAdding(false);
-    });
-    setDescription("");
-  };
 
   if (loadingStatus === LoadingStatus.loading) {
     return <div>Loading...</div>;
@@ -67,17 +54,7 @@ const ThingList = () => {
           </ErrorBoundary>
         </tbody>
       </table>
-      <input
-        placeholder="Description"
-        value={description}
-        onChange={(e) => {
-          setDescription(e.target.value);
-        }}
-        required
-      />
-      <button onClick={add} disabled={isAdding}>
-        {isAdding ? "Adding Thing..." : "Add Thing"}
-      </button>
+      <ThingAddForm createThing={createThing} />
     </>
   );
 };
