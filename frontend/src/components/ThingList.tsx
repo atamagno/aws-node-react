@@ -1,6 +1,10 @@
+import { useState } from "react";
+
 import ThingRow from "./ThingRow";
 import ThingAddForm from "./ThingAddForm";
+import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
+import ThingUpdateForm from "./ThingUpdateForm";
 import useThingsData from "../hooks/useThingData";
 import { LoadingStatus } from "../types/LoadingStatus";
 
@@ -13,6 +17,15 @@ const ThingList = () => {
     updateThing,
     deleteThing,
   } = useThingsData();
+
+  const [thing, setThing] = useState<Thing>({
+    id: "",
+    description: "",
+  });
+
+  const handleUpdate = (thing: Thing) => {
+    setThing(thing);
+  };
 
   if (loadingStatus === LoadingStatus.loading) {
     return <div>Loading...</div>;
@@ -34,6 +47,13 @@ const ThingList = () => {
       >
         Get Things
       </button>
+      <br />
+      <br />
+      <ThingUpdateForm
+        updateThing={updateThing}
+        setThing={setThing}
+        thing={thing}
+      />
       <table className="table table-hover">
         <thead>
           <tr>
@@ -48,7 +68,7 @@ const ThingList = () => {
                 key={h.id}
                 thing={h}
                 deleteThing={deleteThing}
-                updateThing={updateThing}
+                handleUpdate={handleUpdate}
               />
             ))}
           </ErrorBoundary>
