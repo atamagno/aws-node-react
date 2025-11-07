@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import "./App.css";
-import ThingList from "./components/ThingList";
+import Things from "./components/Things";
 import Layout from "./components/layout/Layout";
 import ThingDetail from "./components/ThingDetail";
 
@@ -10,7 +10,7 @@ function App() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route index element={<ThingList />} />
+          <Route index element={<Things />} />
           <Route path="/thing/:id" element={<ThingDetail />} />
         </Routes>
       </Layout>

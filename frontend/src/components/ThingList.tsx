@@ -7,40 +7,39 @@ import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
 import { LoadingStatus } from "../types/LoadingStatus";
 
-type ThingState = {
+type ThingListState = {
   things: Thing[];
   loadingStatus: LoadingStatus;
   error: string | undefined;
 };
 
 const ThingList = () => {
-  const initialState: ThingState = {
+  const initialState: ThingListState = {
     things: [],
     loadingStatus: LoadingStatus.loading,
     error: undefined,
   };
 
-  const [thingsState, setThingsState] = useState<ThingState>(initialState);
+  const [thingsState, setThingsState] = useState<ThingListState>(initialState);
 
   useEffect(() => {
     const fetchThings = async () => {
       try {
         const response = await axios.get(`${config.restApiUrl}/thing`);
-        console.log(response);
         setThingsState({
           things: response.data,
           loadingStatus: LoadingStatus.loaded,
           error: undefined,
         });
       } catch (error) {
-        setThingsState({
-          ...thingsState,
+        setThingsState((prevState) => ({
+          ...prevState,
           loadingStatus: LoadingStatus.error,
           error:
             error instanceof Error
               ? (error.message ?? "an unexpected error happened")
               : "an unexpected error happened",
-        });
+        }));
       }
     };
     fetchThings();
