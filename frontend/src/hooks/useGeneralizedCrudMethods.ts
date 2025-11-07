@@ -7,6 +7,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
   const [data, setData] = useState<T[]>([]);
+  const [error, setError] = useState("");
   const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>(
     LoadingStatus.loading
   );
@@ -15,53 +16,67 @@ const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
     throw new Error("useGeneralizedCrudMethods no url passed in error");
   }
 
-  const readRecords = async () => {
+  const formatErrorString = (error: unknown) => {
+    let errorMessage = "An error occurred.";
+    if (error instanceof Error) {
+      errorMessage += ` ${error.message}`;
+    }
+    console.log(errorMessage);
+    return errorMessage;
+  };
+
+  const readRecords = async (callbackDone?: () => void) => {
     setLoadingStatus(LoadingStatus.loading);
     try {
       await delay(1000);
       const response = await axios.get(url);
       setData(response.data);
       setLoadingStatus(LoadingStatus.loaded);
-    } catch {
+    } catch (e) {
+      setError(formatErrorString(e));
       setLoadingStatus(LoadingStatus.error);
     }
+    if (callbackDone) callbackDone();
   };
 
   useEffect(() => {
-    const readRecordsUseEffect = async () => {
+    const readRecordsUseEffect = async (callbackDone?: () => void) => {
       try {
         setLoadingStatus(LoadingStatus.loading);
         await delay(1000);
         const response = await axios.get(url);
         setData(response.data);
         setLoadingStatus(LoadingStatus.loaded);
-      } catch {
+      } catch (e) {
+        setError(formatErrorString(e));
         setLoadingStatus(LoadingStatus.error);
       }
+      if (callbackDone) callbackDone();
     };
     readRecordsUseEffect();
   }, [url]);
 
-  const createRecord = <U>(record: U) => {
+  const createRecord = <U>(record: U, callbackDone?: () => void) => {
     const addData = async () => {
       try {
-        setLoadingStatus(LoadingStatus.loading);
         await delay(1000);
         const response = await axios.post(url, record);
         const newRecord = response.data as T;
         setData([newRecord, ...(data || [])]);
-        setLoadingStatus(LoadingStatus.loaded);
-      } catch {
-        setLoadingStatus(LoadingStatus.error);
+      } catch (e) {
+        setError(formatErrorString(e));
       }
+      if (callbackDone) callbackDone();
     };
     addData();
   };
 
-  const updateRecord = <U extends { id: string }>(record: U) => {
+  const updateRecord = <U extends { id: string }>(
+    record: U,
+    callbackDone?: () => void
+  ) => {
     const updateData = async () => {
       try {
-        setLoadingStatus(LoadingStatus.loading);
         await delay(1000);
         const response = await axios.put(url, record);
         const updatedRecord = response.data as T;
@@ -69,32 +84,32 @@ const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
           item.id === updatedRecord.id ? updatedRecord : item
         );
         setData(updatedRecords);
-        setLoadingStatus(LoadingStatus.loaded);
-      } catch {
-        setLoadingStatus(LoadingStatus.error);
+      } catch (e) {
+        setError(formatErrorString(e));
       }
+      if (callbackDone) callbackDone();
     };
     updateData();
   };
 
-  const deleteRecord = (id: string) => {
+  const deleteRecord = (id: string, callbackDone?: () => void) => {
     const deleteData = async () => {
       try {
-        setLoadingStatus(LoadingStatus.loading);
         await delay(1000);
         await axios.delete(`${url}/${id}`);
         const updatedData = data.filter((item) => item.id !== id);
         setData(updatedData);
-        setLoadingStatus(LoadingStatus.loaded);
-      } catch {
-        setLoadingStatus(LoadingStatus.error);
+      } catch (e) {
+        setError(formatErrorString(e));
       }
+      if (callbackDone) callbackDone();
     };
     deleteData();
   };
 
   return {
     data,
+    error,
     loadingStatus,
     createRecord,
     readRecords,

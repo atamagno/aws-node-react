@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import ThingRow from "./ThingRow";
-import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
 import useThingsData from "../hooks/useThingData";
 import { LoadingStatus } from "../types/LoadingStatus";
@@ -17,17 +16,14 @@ const ThingList = () => {
   } = useThingsData();
   const [description, setDescription] = useState("");
 
-  const handleDelete = (id: string) => {
-    deleteThing(id);
-  };
-
-  const handleUpdate = (thing: Thing) => {
-    updateThing(thing);
-  };
+  const [isAdding, setIsAdding] = useState(false);
 
   const add = () => {
+    setIsAdding(true);
     const newThing = { description };
-    createThing(newThing);
+    createThing(newThing, () => {
+      setIsAdding(false);
+    });
     setDescription("");
   };
 
@@ -64,8 +60,8 @@ const ThingList = () => {
               <ThingRow
                 key={h.id}
                 thing={h}
-                handleDelete={handleDelete}
-                handleUpdate={handleUpdate}
+                deleteThing={deleteThing}
+                updateThing={updateThing}
               />
             ))}
           </ErrorBoundary>
@@ -79,10 +75,9 @@ const ThingList = () => {
         }}
         required
       />
-      <button onClick={add}>{"Add Thing"}</button>
-      {/* <button onClick={add} disabled={isAdding}>
+      <button onClick={add} disabled={isAdding}>
         {isAdding ? "Adding Thing..." : "Add Thing"}
-      </button> */}
+      </button>
     </>
   );
 };

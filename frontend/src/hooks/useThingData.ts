@@ -5,6 +5,7 @@ import useGeneralizedCrudMethods from "./useGeneralizedCrudMethods";
 const useThingsData = () => {
   const {
     data,
+    error,
     loadingStatus,
     createRecord,
     readRecords,
@@ -12,25 +13,26 @@ const useThingsData = () => {
     deleteRecord,
   } = useGeneralizedCrudMethods<Thing>(`${config.restApiUrl}/thing`);
 
-  const createThing = (thing: CreateThingDto) => {
-    createRecord<CreateThingDto>(thing);
+  const createThing = (thing: CreateThingDto, callbackDone: () => void) => {
+    createRecord<CreateThingDto>(thing, callbackDone);
   };
 
   const readThings = () => {
     readRecords();
   };
 
-  const updateThing = (thing: Thing) => {
-    updateRecord<Thing>(thing);
+  const updateThing = (thing: Thing, callbackDone: () => void) => {
+    updateRecord<Thing>(thing, callbackDone);
   };
 
-  const deleteThing = (id: string) => {
-    deleteRecord(id);
+  const deleteThing = (id: string, callbackDone: () => void) => {
+    deleteRecord(id, callbackDone);
   };
 
   return {
     things: data,
     loadingStatus,
+    error,
     createThing,
     readThings,
     updateThing,
