@@ -3,15 +3,17 @@ import { useEffect, useState } from "react";
 
 import ThingRow from "./ThingRow";
 import config from "../config/config";
-import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
 import { LoadingStatus } from "../types/LoadingStatus";
+import type { CreateThingDto, Thing } from "../types/Thing";
 
 type ThingListState = {
   things: Thing[];
   loadingStatus: LoadingStatus;
   error: string | undefined;
 };
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const ThingList = () => {
   const initialState: ThingListState = {
@@ -21,10 +23,13 @@ const ThingList = () => {
   };
 
   const [thingsState, setThingsState] = useState<ThingListState>(initialState);
+  const [description, setDescription] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     const fetchThings = async () => {
       try {
+        await delay(1000);
         const response = await axios.get(`${config.restApiUrl}/thing`);
         setThingsState({
           things: response.data,
@@ -44,6 +49,38 @@ const ThingList = () => {
     };
     fetchThings();
   }, []);
+
+  const createThing = (thing: CreateThingDto) => {
+    const addData = async () => {
+      try {
+        setIsAdding(true);
+        await delay(1000);
+        const response = await axios.post(`${config.restApiUrl}/thing`, thing);
+        const newThing = response.data;
+        setIsAdding(false);
+        setThingsState({
+          ...thingsState,
+          things: [newThing, ...thingsState.things],
+        });
+      } catch (error) {
+        setIsAdding(false);
+        setThingsState({
+          ...thingsState,
+          error:
+            error instanceof Error
+              ? (error.message ?? "an unexpected error happened")
+              : "an unexpected error happened",
+        });
+      }
+    };
+    addData();
+  };
+
+  const handleAddClick = () => {
+    const newThing = { description };
+    createThing(newThing);
+    setDescription("");
+  };
 
   if (thingsState.loadingStatus === LoadingStatus.loading) {
     return <div>Loading...</div>;
@@ -73,6 +110,17 @@ const ThingList = () => {
           </ErrorBoundary>
         </tbody>
       </table>
+      <input
+        placeholder="Description"
+        value={description}
+        onChange={(e) => {
+          setDescription(e.target.value);
+        }}
+        required
+      />
+      <button onClick={handleAddClick} disabled={isAdding}>
+        {isAdding ? "Adding Thing..." : "Add Thing"}
+      </button>
     </>
   );
 };
