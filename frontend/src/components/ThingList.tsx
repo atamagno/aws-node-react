@@ -13,8 +13,8 @@ const ThingList = () => {
   useEffect(() => {
     const fetchThings = async () => {
       setLoading(true);
-      const result = await axios.get(`${config.restApiUrl}/thing`);
-      setThings(result.data);
+      const response = await axios.get(`${config.restApiUrl}/thing`);
+      setThings(response.data);
       setLoading(false);
     };
     fetchThings();
