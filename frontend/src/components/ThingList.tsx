@@ -5,23 +5,53 @@ import ThingRow from "./ThingRow";
 import config from "../config/config";
 import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
+import { LoadingStatus } from "../types/LoadingStatus";
+
+type ThingState = {
+  things: Thing[];
+  loadingStatus: LoadingStatus;
+  error: string | undefined;
+};
 
 const ThingList = () => {
-  const [loading, setLoading] = useState(true);
-  const [things, setThings] = useState<Thing[]>([]);
+  const initialState: ThingState = {
+    things: [],
+    loadingStatus: LoadingStatus.loading,
+    error: undefined,
+  };
+
+  const [thingsState, setThingsState] = useState<ThingState>(initialState);
 
   useEffect(() => {
     const fetchThings = async () => {
-      setLoading(true);
-      const response = await axios.get(`${config.restApiUrl}/thing`);
-      setThings(response.data);
-      setLoading(false);
+      try {
+        const response = await axios.get(`${config.restApiUrl}/thing`);
+        console.log(response);
+        setThingsState({
+          things: response.data,
+          loadingStatus: LoadingStatus.loaded,
+          error: undefined,
+        });
+      } catch (error) {
+        setThingsState({
+          ...thingsState,
+          loadingStatus: LoadingStatus.error,
+          error:
+            error instanceof Error
+              ? (error.message ?? "an unexpected error happened")
+              : "an unexpected error happened",
+        });
+      }
     };
     fetchThings();
   }, []);
 
-  if (loading) {
+  if (thingsState.loadingStatus === LoadingStatus.loading) {
     return <div>Loading...</div>;
+  }
+
+  if (thingsState.loadingStatus === LoadingStatus.error) {
+    return <div className="card">Error: {thingsState.error}</div>;
   }
 
   return (
@@ -38,7 +68,7 @@ const ThingList = () => {
         </thead>
         <tbody>
           <ErrorBoundary fallback="Error loading thing rows!">
-            {things.map((h) => (
+            {thingsState.things.map((h) => (
               <ThingRow key={h.id} thing={h} />
             ))}
           </ErrorBoundary>
