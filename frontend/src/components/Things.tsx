@@ -1,7 +1,12 @@
 import ThingList from "./ThingList";
+import { ThingsDataProvider } from "../contexts/ThingsDataContext";
 
 const Things = () => {
-  return <ThingList />;
+  return (
+    <ThingsDataProvider>
+      <ThingList />
+    </ThingsDataProvider>
+  );
 };
 
 export default Things;

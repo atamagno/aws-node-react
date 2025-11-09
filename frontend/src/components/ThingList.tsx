@@ -1,27 +1,24 @@
-import { useState } from "react";
+import { useContext } from "react";
 
 import ThingRow from "./ThingRow";
 import ThingAddForm from "./ThingAddForm";
 import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
 import ThingUpdateForm from "./ThingUpdateForm";
-import useThingsData from "../hooks/useThingData";
 import { LoadingStatus } from "../types/LoadingStatus";
+import { ThingsContext } from "../contexts/ThingsDataContext";
 
 const ThingList = () => {
   const {
+    thing,
+    setThing,
     things,
     loadingStatus,
     createThing,
     readThings,
     updateThing,
     deleteThing,
-  } = useThingsData();
-
-  const [thing, setThing] = useState<Thing>({
-    id: "",
-    description: "",
-  });
+  } = useContext(ThingsContext);
 
   const handleUpdate = (thing: Thing) => {
     setThing(thing);
