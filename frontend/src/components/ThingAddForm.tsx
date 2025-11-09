@@ -1,14 +1,10 @@
 import { useState } from "react";
 
-import type { CreateThingDto } from "../types/Thing";
+import { useThingsDataContext } from "../contexts/ThingsDataContext";
 
-const ThingAddForm = ({
-  createThing,
-}: {
-  createThing: (thing: CreateThingDto, callbackDone: () => void) => void;
-}) => {
+const ThingAddForm = () => {
+  const { createThing } = useThingsDataContext();
   const [description, setDescription] = useState("");
-
   const [isAdding, setIsAdding] = useState(false);
 
   const add = () => {

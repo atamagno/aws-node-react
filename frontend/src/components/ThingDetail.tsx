@@ -1,11 +1,11 @@
 import { useParams } from "react-router";
 
-import useThingsData from "../hooks/useThingData";
 import { LoadingStatus } from "../types/LoadingStatus";
+import { useThingsDataContext } from "../contexts/ThingsDataContext";
 
 const ThingDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { loadingStatus, things } = useThingsData();
+  const { loadingStatus, things } = useThingsDataContext();
 
   const thing = things.find((t) => t.id === id);
 

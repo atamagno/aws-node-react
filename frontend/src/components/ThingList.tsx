@@ -1,28 +1,12 @@
-import { useContext } from "react";
-
 import ThingRow from "./ThingRow";
 import ThingAddForm from "./ThingAddForm";
-import type { Thing } from "../types/Thing";
 import ErrorBoundary from "./ErrorBoundary";
 import ThingUpdateForm from "./ThingUpdateForm";
 import { LoadingStatus } from "../types/LoadingStatus";
-import { ThingsContext } from "../contexts/ThingsDataContext";
+import { useThingsDataContext } from "../contexts/ThingsDataContext";
 
 const ThingList = () => {
-  const {
-    thing,
-    setThing,
-    things,
-    loadingStatus,
-    createThing,
-    readThings,
-    updateThing,
-    deleteThing,
-  } = useContext(ThingsContext);
-
-  const handleUpdate = (thing: Thing) => {
-    setThing(thing);
-  };
+  const { things, loadingStatus, readThings } = useThingsDataContext();
 
   if (loadingStatus === LoadingStatus.loading) {
     return <div>Loading...</div>;
@@ -46,11 +30,7 @@ const ThingList = () => {
       </button>
       <br />
       <br />
-      <ThingUpdateForm
-        updateThing={updateThing}
-        setThing={setThing}
-        thing={thing}
-      />
+      <ThingUpdateForm />
       <table className="table table-hover">
         <thead>
           <tr>
@@ -61,17 +41,12 @@ const ThingList = () => {
         <tbody>
           <ErrorBoundary fallback="Error loading thing rows!">
             {things.map((h) => (
-              <ThingRow
-                key={h.id}
-                thing={h}
-                deleteThing={deleteThing}
-                handleUpdate={handleUpdate}
-              />
+              <ThingRow key={h.id} thing={h} />
             ))}
           </ErrorBoundary>
         </tbody>
       </table>
-      <ThingAddForm createThing={createThing} />
+      <ThingAddForm />
     </>
   );
 };

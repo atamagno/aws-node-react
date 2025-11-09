@@ -2,18 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import type { Thing } from "../types/Thing";
+import { useThingsDataContext } from "../contexts/ThingsDataContext";
 
-const ThingRow = ({
-  thing,
-  deleteThing,
-  handleUpdate,
-}: {
-  thing: Thing;
-  deleteThing: (id: string, callbackDone: () => void) => void;
-  handleUpdate: (thing: Thing) => void;
-}) => {
+const ThingRow = ({ thing }: { thing: Thing }) => {
   const navigate = useNavigate();
-
+  const { setThing, deleteThing } = useThingsDataContext();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const deleteHandler = () => {
@@ -33,7 +26,7 @@ const ThingRow = ({
         </button>
         <button
           onClick={() => {
-            handleUpdate(thing);
+            setThing(thing);
           }}
         >
           Update

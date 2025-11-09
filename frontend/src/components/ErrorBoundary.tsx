@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ErrorBoundaryProps {
-  fallback: string;
+  fallback?: string;
   children: React.ReactNode;
 }
 
@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
-      return <h4>{this.props.fallback}</h4>;
+      return <h4>{this.props.fallback || "Something went wrong!"}</h4>;
     }
     return this.props.children;
   }

@@ -1,16 +1,9 @@
 import { useState } from "react";
 
-import type { Thing } from "../types/Thing";
+import { useThingsDataContext } from "../contexts/ThingsDataContext";
 
-const ThingUpdateForm = ({
-  updateThing,
-  setThing,
-  thing,
-}: {
-  updateThing: (thing: Thing, callbackDone: () => void) => void;
-  setThing: (thing: Thing) => void;
-  thing: Thing;
-}) => {
+const ThingUpdateForm = () => {
+  const { thing, setThing, updateThing } = useThingsDataContext();
   const [isUpdating, setIsUpdating] = useState(false);
 
   const update = () => {

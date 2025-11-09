@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useState } from "react";
+import { type ReactNode, createContext, useContext, useState } from "react";
 
 import useThingsData from "../hooks/useThingData";
 import type { CreateThingDto, Thing } from "../types/Thing";
@@ -14,19 +14,9 @@ interface ThingsDataContextProps {
   deleteThing: (id: string, callbackDone: () => void) => void;
 }
 
-export const ThingsContext = createContext<ThingsDataContextProps>({
-  thing: {
-    id: "",
-    description: "",
-  },
-  setThing: () => {},
-  things: [],
-  loadingStatus: "",
-  createThing: () => {},
-  readThings: () => {},
-  updateThing: () => {},
-  deleteThing: () => {},
-});
+const ThingsContext = createContext<ThingsDataContextProps | undefined>(
+  undefined
+);
 
 export const ThingsDataProvider = ({ children }: { children: ReactNode }) => {
   const {
@@ -57,4 +47,14 @@ export const ThingsDataProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ThingsContext.Provider value={value}>{children}</ThingsContext.Provider>
   );
+};
+
+export const useThingsDataContext = () => {
+  const context = useContext(ThingsContext);
+  if (!context) {
+    throw new Error(
+      "useThingsDataContext must be used within a ThingsDataProvider"
+    );
+  }
+  return context;
 };
