@@ -1,26 +1,41 @@
 import ThingRow from "./ThingRow";
-import useThings from "../hooks/useThing";
+import ThingAddForm from "./ThingAddForm";
 import ErrorBoundary from "./ErrorBoundary";
-import LoadingIndicator from "./LoadingIndicator";
-import loadingStatus from "../helpers/loadingStatus";
+import ThingUpdateForm from "./ThingUpdateForm";
+import { LoadingStatus } from "../types/LoadingStatus";
+import { useThingsDataContext } from "../contexts/ThingsDataContext";
 
 const ThingList = () => {
-  const { things, loadingState } = useThings();
+  const { things, loadingStatus, readThings } = useThingsDataContext();
 
-  if (loadingState !== loadingStatus.loaded)
-    return <LoadingIndicator loadingState={loadingState} />;
+  if (loadingStatus === LoadingStatus.loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (loadingStatus === LoadingStatus.error) {
+    return <div>Error</div>;
+  }
 
   return (
     <>
-      <div className="row mb-2">
-        <h5 className="themeFontColor text-center">Things List</h5>
+      <div>
+        <h5>Things List</h5>
       </div>
+      <button
+        onClick={() => {
+          readThings();
+        }}
+      >
+        Get Things
+      </button>
+      <br />
+      <br />
+      <ThingUpdateForm />
       <table className="table table-hover">
         <thead>
           <tr>
-            <th>Address</th>
-            <th>Country</th>
-            <th>Asking Price</th>
+            <th>Id</th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +46,7 @@ const ThingList = () => {
           </ErrorBoundary>
         </tbody>
       </table>
+      <ThingAddForm />
     </>
   );
 };

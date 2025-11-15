@@ -20,8 +20,8 @@ const listThings = async (): Promise<Thing[]> => {
     const params: ScanCommandInput = {
       TableName: config.thingsTableName,
     };
-    const things = await docClient.send(new ScanCommand(params));
-    return things.Items as Thing[];
+    const result = await docClient.send(new ScanCommand(params));
+    return result.Items as Thing[];
   } catch (error) {
     console.error("Error fetching things from DynamoDB:", error);
     return [];
@@ -71,7 +71,7 @@ const updateThing = async (updatedThing: Thing): Promise<Thing> => {
   }
 };
 
-const deleteThing = async (id: string): Promise<void> => {
+const removeThing = async (id: string): Promise<void> => {
   try {
     const params: DeleteCommandInput = {
       TableName: config.thingsTableName,
@@ -84,4 +84,4 @@ const deleteThing = async (id: string): Promise<void> => {
   }
 };
 
-export { listThings, getThingById, createThing, updateThing, deleteThing };
+export { listThings, getThingById, createThing, updateThing, removeThing };

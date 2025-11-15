@@ -1,17 +1,26 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import "./App.css";
-import Thing from "./components/Thing";
-import ThingList from "./components/ThingList";
+import Things from "./components/Things";
+import Layout from "./components/layout/Layout";
+import ThingDetail from "./components/ThingDetail";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ThingsDataProvider } from "./contexts/ThingsDataContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route index element={<ThingList />} />
-        <Route path="thing/" element={<Thing />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ThingsDataProvider>
+          <Layout>
+            <Routes>
+              <Route index element={<Things />} />
+              <Route path="/thing/:id" element={<ThingDetail />} />
+            </Routes>
+          </Layout>
+        </ThingsDataProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

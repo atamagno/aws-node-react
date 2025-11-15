@@ -1,10 +1,6 @@
 export interface Thing {
-  id: number;
-  address: string;
-  country: string;
+  id: string;
   description: string;
-  price: number;
-  photo?: string;
 }
 
 export type CreateThingDto = Omit<Thing, "id">;
