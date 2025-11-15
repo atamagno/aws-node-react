@@ -27,7 +27,10 @@ const ThingUpdateForm = () => {
         }}
         required
       />
-      <button onClick={update} disabled={isUpdating || !thing.id}>
+      <button
+        onClick={update}
+        disabled={isUpdating || !thing.id || !thing.description.trim()}
+      >
         {isUpdating ? "Updating Thing..." : "Update Thing"}
       </button>
     </>

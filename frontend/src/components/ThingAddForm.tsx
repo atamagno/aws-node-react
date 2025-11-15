@@ -26,7 +26,7 @@ const ThingAddForm = () => {
         }}
         required
       />
-      <button onClick={add} disabled={isAdding}>
+      <button onClick={add} disabled={isAdding || !description.trim()}>
         {isAdding ? "Adding Thing..." : "Add Thing"}
       </button>
     </>
