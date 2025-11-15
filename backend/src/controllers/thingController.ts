@@ -17,7 +17,11 @@ export const getThings = async (req: Request, res: Response) => {
 export const getThing = async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const thing = await getThingById(id);
-  res.status(200).json(thing);
+  if (thing) {
+    res.status(200).json(thing);
+  } else {
+    res.status(404).json({ message: `Thing with ID ${id} not found` });
+  }
 };
 
 export const postThing = async (req: Request, res: Response) => {

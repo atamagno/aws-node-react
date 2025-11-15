@@ -23,14 +23,18 @@ const listThings = async (): Promise<Thing[]> => {
     const result = await docClient.send(new ScanCommand(params));
     return result.Items as Thing[];
   } catch (error) {
-    console.error("Error fetching things from DynamoDB:", error);
-    return [];
+    console.error("Error listing things from DynamoDB:", error);
+    throw error;
   }
 };
 
 const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
   try {
-    const thingWithId = { id: uuidv4(), ...newThing };
+    const thingWithId = {
+      id: uuidv4(),
+      createdAt: Date.now().toString(),
+      ...newThing,
+    };
     const params: PutCommandInput = {
       TableName: config.thingsTableName,
       Item: thingWithId,
@@ -38,7 +42,7 @@ const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
     await docClient.send(new PutCommand(params));
     return thingWithId;
   } catch (error) {
-    console.error("Error writing thing to DynamoDB:", error);
+    console.error("Error creating thing in DynamoDB:", error);
     throw error;
   }
 };
@@ -52,13 +56,14 @@ const getThingById = async (id: string): Promise<Thing | undefined> => {
     const result = await docClient.send(new GetCommand(params));
     return result.Item as Thing | undefined;
   } catch (error) {
-    console.error("Error fetching thing from DynamoDB:", error);
+    console.error("Error getting thing from DynamoDB:", error);
     throw error;
   }
 };
 
 const updateThing = async (updatedThing: Thing): Promise<Thing> => {
   try {
+    updatedThing.updatedAt = Date.now().toString();
     const params: PutCommandInput = {
       TableName: config.thingsTableName,
       Item: updatedThing,
@@ -66,7 +71,7 @@ const updateThing = async (updatedThing: Thing): Promise<Thing> => {
     await docClient.send(new PutCommand(params));
     return updatedThing;
   } catch (error) {
-    console.error("Error writing thing to DynamoDB:", error);
+    console.error("Error updating thing in DynamoDB:", error);
     throw error;
   }
 };
@@ -79,7 +84,7 @@ const removeThing = async (id: string): Promise<void> => {
     };
     await docClient.send(new DeleteCommand(params));
   } catch (error) {
-    console.error("Error deleting thing from DynamoDB:", error);
+    console.error("Error removing thing from DynamoDB:", error);
     throw error;
   }
 };
