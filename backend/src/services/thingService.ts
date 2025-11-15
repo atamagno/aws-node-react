@@ -12,10 +12,27 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 import config from "../config";
+import logger from "../utils/logger";
+import { ApiError } from "../types/Error";
 import docClient from "../lib/dynamodb/client";
 import { CreateThingDto, Thing } from "../types/Thing";
 
-const listThings = async (): Promise<Thing[]> => {
+// helper function to handle DynamoDB errors consistently
+const handleDbError = (operation: string, error: unknown): never => {
+  // log the error using the structured logger
+  logger.error({ dbOperation: operation, error: error }, `DynamoDB operation failed: ${operation}`);
+
+  // create a type-safe API error object
+  const apiError: ApiError = {
+    name: "DatabaseError",
+    statusCode: 500,
+    message: `Failed to ${operation.toLowerCase()} entity`,
+    internalError: error instanceof Error ? error.message : "Unknown DB error",
+  };
+  throw apiError;
+};
+
+const listThings = async (): Promise<Thing[] | undefined> => {
   try {
     const params: ScanCommandInput = {
       TableName: config.thingsTableName,
@@ -23,12 +40,11 @@ const listThings = async (): Promise<Thing[]> => {
     const result = await docClient.send(new ScanCommand(params));
     return result.Items as Thing[];
   } catch (error) {
-    console.error("Error listing things from DynamoDB:", error);
-    throw error;
+    handleDbError("Scan", error);
   }
 };
 
-const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
+const createThing = async (newThing: CreateThingDto): Promise<Thing | undefined> => {
   try {
     const thingWithId = {
       id: uuidv4(),
@@ -42,8 +58,7 @@ const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
     await docClient.send(new PutCommand(params));
     return thingWithId;
   } catch (error) {
-    console.error("Error creating thing in DynamoDB:", error);
-    throw error;
+    handleDbError("Create", error);
   }
 };
 
@@ -56,12 +71,11 @@ const getThingById = async (id: string): Promise<Thing | undefined> => {
     const result = await docClient.send(new GetCommand(params));
     return result.Item as Thing | undefined;
   } catch (error) {
-    console.error("Error getting thing from DynamoDB:", error);
-    throw error;
+    handleDbError("Get", error);
   }
 };
 
-const updateThing = async (updatedThing: Thing): Promise<Thing> => {
+const updateThing = async (updatedThing: Thing): Promise<Thing | undefined> => {
   try {
     updatedThing.updatedAt = Date.now().toString();
     const params: PutCommandInput = {
@@ -71,8 +85,7 @@ const updateThing = async (updatedThing: Thing): Promise<Thing> => {
     await docClient.send(new PutCommand(params));
     return updatedThing;
   } catch (error) {
-    console.error("Error updating thing in DynamoDB:", error);
-    throw error;
+    handleDbError("Update", error);
   }
 };
 
@@ -84,8 +97,7 @@ const removeThing = async (id: string): Promise<void> => {
     };
     await docClient.send(new DeleteCommand(params));
   } catch (error) {
-    console.error("Error removing thing from DynamoDB:", error);
-    throw error;
+    handleDbError("Delete", error);
   }
 };
 

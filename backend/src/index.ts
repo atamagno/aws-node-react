@@ -1,11 +1,20 @@
 import cors from "cors";
 import helmet from "helmet";
+import { v4 as uuidv4 } from "uuid";
 import rateLimit from "express-rate-limit";
 
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 
+import logger from "./utils/logger";
 import thingRoutes from "./routes/thing";
 import healthRoutes from "./routes/health";
+
+// extend the Express Request interface to include id property
+declare module "express-serve-static-core" {
+  interface Request {
+    id: string;
+  }
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,6 +37,14 @@ const limiter = rateLimit({
 // middleware to parse JSON request bodies
 app.use(express.json());
 
+// request ID and logging setup, assign a unique ID to every request for tracing logs
+app.use((req: Request, res: Response, next: NextFunction) => {
+  req.id = uuidv4();
+  // log the start of the request with request metadata
+  logger.info({ id: req.id, method: req.method, url: req.url }, "Incoming request");
+  next();
+});
+
 // security middleware
 app.use(helmet());
 
@@ -45,5 +62,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  logger.info(`Server is running at http://localhost:${port}`);
 });
