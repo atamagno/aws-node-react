@@ -45,6 +45,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+app.use("/", healthRoutes);
+
 // security middleware
 app.use(helmet());
 
@@ -54,7 +56,6 @@ app.use(limiter);
 // middleware to enable CORS with custom block logic
 app.use(cors());
 
-app.use("/", healthRoutes);
 app.use("/", thingRoutes);
 
 app.get("/", (req, res) => {

@@ -32,6 +32,27 @@ const handleDbError = (operation: string, error: unknown): never => {
   throw apiError;
 };
 
+// checks the database connection by performing a lightweight operation
+const checkDbConnection = async (): Promise<void> => {
+  try {
+    const params: ScanCommandInput = {
+      TableName: config.thingsTableName,
+      Limit: 1,
+      Select: "COUNT",
+    };
+    await docClient.send(new ScanCommand(params));
+  } catch (error) {
+    logger.error({ dbOperation: "HealthCheck", error: error }, "DynamoDB health check failed");
+    const healthError: ApiError = {
+      name: "HealthCheckFailure",
+      statusCode: 503,
+      message: "Database connection failed",
+      internalError: error instanceof Error ? error.message : "Unknown DB health check error",
+    };
+    throw healthError;
+  }
+};
+
 const listThings = async (): Promise<Thing[] | undefined> => {
   try {
     const params: ScanCommandInput = {
@@ -101,4 +122,4 @@ const removeThing = async (id: string): Promise<void> => {
   }
 };
 
-export { listThings, getThingById, createThing, updateThing, removeThing };
+export { checkDbConnection, listThings, getThingById, createThing, updateThing, removeThing };
