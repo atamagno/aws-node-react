@@ -45,6 +45,7 @@ jobs:
         working-directory: ./backend
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
+          ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
         run: |
           chmod u+x deploy-lambda.sh
           ./deploy-lambda.sh

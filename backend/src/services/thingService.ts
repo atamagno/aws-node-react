@@ -69,7 +69,7 @@ const createThing = async (newThing: CreateThingDto): Promise<Thing | undefined>
   try {
     const thingWithId = {
       id: uuidv4(),
-      createdAt: Date.now().toString(),
+      createdAt: Date.now(),
       ...newThing,
     };
     const params: PutCommandInput = {
@@ -98,7 +98,7 @@ const getThingById = async (id: string): Promise<Thing | undefined> => {
 
 const updateThing = async (updatedThing: Thing): Promise<Thing | undefined> => {
   try {
-    updatedThing.updatedAt = Date.now().toString();
+    updatedThing.updatedAt = Date.now();
     const params: PutCommandInput = {
       TableName: config.thingsTableName,
       Item: updatedThing,
