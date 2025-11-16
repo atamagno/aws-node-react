@@ -152,7 +152,8 @@ Resources:
           TargetGroupArn: !Sub ${pTargetGroupArn}
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          # AssignPublicIp: DISABLED # Use this if using private subnets with NAT Gateway
+          AssignPublicIp: ENABLED
           SecurityGroups:
             - !Ref ECSClusterSecurityGroup
           Subnets: !Ref pPrivateSubnetIds

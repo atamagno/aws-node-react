@@ -65,8 +65,8 @@ Resources:
       Targets: []
       HealthCheckIntervalSeconds: 30
       HealthCheckPath: /health
-      HealthCheckEnabled: true
-      #HealthCheckEnabled: false
+      # HealthCheckEnabled: true
+      HealthCheckEnabled: false
       UnhealthyThresholdCount: 2
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 5
@@ -90,11 +90,6 @@ Resources:
         - Type: forward
           Order: 1
           TargetGroupArn: !Ref ELBTargetGroupA
-      Tags:
-        - Key: Name
-          Value: !Sub "${pAppName}-${pEnvironmentName}-elb-listener"
-        - Key: Environment
-          Value: !Ref pEnvironmentName
 
 Outputs:
   ELBSecurityGroupId:
