@@ -1,4 +1,4 @@
-name: Deploy Infra
+name: Deploy Infra Lambda
 
 on:
   workflow_dispatch:
@@ -46,5 +46,5 @@ jobs:
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
         run: |
-          chmod u+x deploy.sh
-          ./deploy.sh
+          chmod u+x deploy-lambda.sh
+          ./deploy-lambda.sh

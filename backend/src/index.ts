@@ -19,10 +19,6 @@ declare module "express-serve-static-core" {
 const app = express();
 const port = process.env.PORT || 3000;
 
-// const corsOptions = {
-//   origin: [`http://localhost:${port}`], // TODO: Update with actual frontend origin in production
-// };
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -52,6 +48,10 @@ app.use(helmet());
 
 // rate limiting
 app.use(limiter);
+
+// const corsOptions = {
+//   origin: [`http://localhost:${port}`, `https://${config.frontendDistributionDomainName}`],
+// };
 
 // middleware to enable CORS with custom block logic
 app.use(cors());

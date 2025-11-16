@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+*.md
+src
+tsconfig.json
+eslint.config.ts
+prettier.config.mts
+esbuild.config.ts
+.husky
+cfn
+plugins
+deploy.sh
+utils.sh

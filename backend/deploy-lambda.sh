@@ -6,12 +6,6 @@ START_TIME=$(date -R)
 
 setVariablesFromParameters $1
 
-if [ -z "${AWS_REGION}" ]
-then
-  echo "AWS_REGION environment variable is not set. Aborting."
-  exit 1
-fi
-
 if [ -z "${ACCOUNT_ID}" ]
 then
   export ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
@@ -30,6 +24,7 @@ if [ -z "${GIT_BRANCH}" ]; then
 fi
 
 APP_NAME="aws-node-react"
+AWS_REGION="${AWS_REGION:-ap-southeast-2}"
 ENVIRONMENT_NAME="${ENVIRONMENT_NAME:-dev}"
 PREFIX="${APP_NAME}-${ENVIRONMENT_NAME}-"
 POSTFIX="-${ACCOUNT_ID}-${AWS_REGION}"
@@ -72,8 +67,30 @@ if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_DDB}" = "true" ]; then
   checkIfFailed
 fi
 
+if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_FE}" = "true" ]; then
+  echo "*** Deploying Frontend Stack ***"
+
+  aws cloudformation deploy \
+    --stack-name $FRONTEND_STACK \
+    --template-file $FRONTEND_CFN_TEMPLATE \
+    --parameter-overrides \
+        pAppName=$APP_NAME \
+        pEnvironmentName=$ENVIRONMENT_NAME \
+        pGitBranch=$GIT_BRANCH \
+        pGitHash=$GIT_HASH \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --no-fail-on-empty-changeset \
+    --tags $CFN_TAGS \
+    --region ${AWS_REGION}
+
+  checkIfFailed
+fi
+
 if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_API}" = "true" ]; then
   echo "*** Deploying API Gateway and Lambda Functions ***"
+
+  getStackOutputs ${FRONTEND_STACK}
+  export FRONTEND_DISTRIBUTION_DOMAIN_NAME=$Stack_FrontendDistributionDomainName
 
   echo "*** Building code ***"
   npm install
@@ -105,25 +122,6 @@ if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_API}" = "true" ]; then
       ParameterKey=pDdbStackName,ParameterValue=${DDB_STACK} \
       ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
       ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
-
-  checkIfFailed
-fi
-
-if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_FE}" = "true" ]; then
-  echo "*** Deploying Frontend Stack ***"
-
-  aws cloudformation deploy \
-    --stack-name $FRONTEND_STACK \
-    --template-file $FRONTEND_CFN_TEMPLATE \
-    --parameter-overrides \
-        pAppName=$APP_NAME \
-        pEnvironmentName=$ENVIRONMENT_NAME \
-        pGitBranch=$GIT_BRANCH \
-        pGitHash=$GIT_HASH \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --no-fail-on-empty-changeset \
-    --tags $CFN_TAGS \
-    --region ${AWS_REGION}
 
   checkIfFailed
 fi
