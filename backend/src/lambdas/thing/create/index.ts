@@ -1,16 +1,10 @@
-import type {
-  APIGatewayProxyEvent,
-  APIGatewayProxyHandler,
-  APIGatewayProxyResult,
-} from "aws-lambda";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 
-import corsResponseHeaders from "../../../utils";
 import { CreateThingDto } from "../../../types/Thing";
+import corsResponseHeaders from "../../../utils/cors";
 import { createThing } from "../../../services/thingService";
 
-export const handler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log("Add thing event:", event);
   const newThing = JSON.parse(event.body || "{}") as CreateThingDto;
   const thingWithId = await createThing(newThing);

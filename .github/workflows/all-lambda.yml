@@ -11,32 +11,32 @@ on:
           - test
           - prod
         default: dev
-      backend:
-        type: choice
-        description: Choose backend service to deploy
-        options:
-          - lambda
-          - ecs
-        default: lambda
       region:
         type: string
         description: Choose AWS region
         default: ap-southeast-2
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
 
 permissions:
   id-token: write
 jobs:
-  deploy-infra-lambda:
-    if: github.event.inputs.backend == 'lambda'
-    uses: ./.github/workflows/all-lambda.yml
+  deploy-infra:
+    uses: ./.github/workflows/infra-lambda.yml
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
 
-  deploy-infra-ecs:
-    if: github.event.inputs.backend == 'ecs'
-    uses: ./.github/workflows/all-ecs.yml
+  deploy-frontend:
+    uses: ./.github/workflows/frontend.yml
+    needs: deploy-infra
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}

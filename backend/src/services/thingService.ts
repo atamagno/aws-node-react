@@ -12,10 +12,48 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 import config from "../config";
+import logger from "../utils/logger";
+import { ApiError } from "../types/Error";
 import docClient from "../lib/dynamodb/client";
 import { CreateThingDto, Thing } from "../types/Thing";
 
-const listThings = async (): Promise<Thing[]> => {
+// helper function to handle DynamoDB errors consistently
+const handleDbError = (operation: string, error: unknown): never => {
+  // log the error using the structured logger
+  logger.error({ dbOperation: operation, error: error }, `DynamoDB operation failed: ${operation}`);
+
+  // create a type-safe API error object
+  const apiError: ApiError = {
+    name: "DatabaseError",
+    statusCode: 500,
+    message: `Failed to ${operation.toLowerCase()} entity`,
+    internalError: error instanceof Error ? error.message : "Unknown DB error",
+  };
+  throw apiError;
+};
+
+// checks the database connection by performing a lightweight operation
+const checkDbConnection = async (): Promise<void> => {
+  try {
+    const params: ScanCommandInput = {
+      TableName: config.thingsTableName,
+      Limit: 1,
+      Select: "COUNT",
+    };
+    await docClient.send(new ScanCommand(params));
+  } catch (error) {
+    logger.error({ dbOperation: "HealthCheck", error: error }, "DynamoDB health check failed");
+    const healthError: ApiError = {
+      name: "HealthCheckFailure",
+      statusCode: 503,
+      message: "Database connection failed",
+      internalError: error instanceof Error ? error.message : "Unknown DB health check error",
+    };
+    throw healthError;
+  }
+};
+
+const listThings = async (): Promise<Thing[] | undefined> => {
   try {
     const params: ScanCommandInput = {
       TableName: config.thingsTableName,
@@ -23,14 +61,17 @@ const listThings = async (): Promise<Thing[]> => {
     const result = await docClient.send(new ScanCommand(params));
     return result.Items as Thing[];
   } catch (error) {
-    console.error("Error fetching things from DynamoDB:", error);
-    return [];
+    handleDbError("Scan", error);
   }
 };
 
-const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
+const createThing = async (newThing: CreateThingDto): Promise<Thing | undefined> => {
   try {
-    const thingWithId = { id: uuidv4(), ...newThing };
+    const thingWithId = {
+      id: uuidv4(),
+      createdAt: Date.now(),
+      ...newThing,
+    };
     const params: PutCommandInput = {
       TableName: config.thingsTableName,
       Item: thingWithId,
@@ -38,8 +79,7 @@ const createThing = async (newThing: CreateThingDto): Promise<Thing> => {
     await docClient.send(new PutCommand(params));
     return thingWithId;
   } catch (error) {
-    console.error("Error writing thing to DynamoDB:", error);
-    throw error;
+    handleDbError("Create", error);
   }
 };
 
@@ -52,13 +92,13 @@ const getThingById = async (id: string): Promise<Thing | undefined> => {
     const result = await docClient.send(new GetCommand(params));
     return result.Item as Thing | undefined;
   } catch (error) {
-    console.error("Error fetching thing from DynamoDB:", error);
-    throw error;
+    handleDbError("Get", error);
   }
 };
 
-const updateThing = async (updatedThing: Thing): Promise<Thing> => {
+const updateThing = async (updatedThing: Thing): Promise<Thing | undefined> => {
   try {
+    updatedThing.updatedAt = Date.now();
     const params: PutCommandInput = {
       TableName: config.thingsTableName,
       Item: updatedThing,
@@ -66,8 +106,7 @@ const updateThing = async (updatedThing: Thing): Promise<Thing> => {
     await docClient.send(new PutCommand(params));
     return updatedThing;
   } catch (error) {
-    console.error("Error writing thing to DynamoDB:", error);
-    throw error;
+    handleDbError("Update", error);
   }
 };
 
@@ -79,9 +118,8 @@ const removeThing = async (id: string): Promise<void> => {
     };
     await docClient.send(new DeleteCommand(params));
   } catch (error) {
-    console.error("Error deleting thing from DynamoDB:", error);
-    throw error;
+    handleDbError("Delete", error);
   }
 };
 
-export { listThings, getThingById, createThing, updateThing, removeThing };
+export { checkDbConnection, listThings, getThingById, createThing, updateThing, removeThing };

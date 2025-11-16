@@ -28,10 +28,7 @@ const samEntryPoints = (cfnFileName: string): string[] => {
   const cfnTemplate = loadYaml(cfnFileName);
   const functions = Object.entries(cfnTemplate.Resources)
     .filter(([, value]) => value.Type === "AWS::Serverless::Function")
-    .map(
-      ([, value]) =>
-        `${(value.Properties.CodeUri as string).replace("../dist", "src")}/index.ts`
-    );
+    .map(([, value]) => `${(value.Properties.CodeUri as string).replace("../dist", "src")}/index.ts`);
   return functions;
 };
 

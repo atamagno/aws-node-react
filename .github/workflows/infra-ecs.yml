@@ -1,4 +1,4 @@
-name: Deploy Infra
+name: Deploy Infra ECS
 
 on:
   workflow_dispatch:
@@ -45,6 +45,7 @@ jobs:
         working-directory: ./backend
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
+          ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
         run: |
-          chmod u+x deploy.sh
-          ./deploy.sh
+          chmod u+x deploy-ecs.sh
+          ./deploy-ecs.sh

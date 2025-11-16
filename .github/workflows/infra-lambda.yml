@@ -1,4 +1,4 @@
-name: Deploy Frontend
+name: Deploy Infra Lambda
 
 on:
   workflow_dispatch:
@@ -28,7 +28,7 @@ permissions:
   id-token: write
 jobs:
   deploy:
-    name: "Deploy Frontend"
+    name: "Deploy Infrastructure"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository code
@@ -40,12 +40,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ github.event.inputs.region }}
 
-      - name: Running script for frontend deployment
-        id: deploy-frontend
-        working-directory: ./frontend
+      - name: Running script for backend deployment
+        id: deploy-backend
+        working-directory: ./backend
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
           ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
         run: |
-          chmod u+x deploy.sh
-          ./deploy.sh
+          chmod u+x deploy-lambda.sh
+          ./deploy-lambda.sh

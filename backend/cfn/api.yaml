@@ -62,13 +62,7 @@ Resources:
                   - dynamodb:DeleteItem
                 Resource:
                   - Fn::ImportValue: !Sub ${pDdbStackName}-ThingsTableArn
-                  - !Join [
-                      "/",
-                      [
-                        Fn::ImportValue: !Sub "${pDdbStackName}-ThingsTableArn",
-                        "index/*",
-                      ],
-                    ]
+                  - !Join ["/", [Fn::ImportValue: !Sub "${pDdbStackName}-ThingsTableArn", "index/*"]]
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 

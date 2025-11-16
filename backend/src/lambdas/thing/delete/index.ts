@@ -1,15 +1,9 @@
-import type {
-  APIGatewayProxyEvent,
-  APIGatewayProxyHandler,
-  APIGatewayProxyResult,
-} from "aws-lambda";
+import type { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 
-import corsResponseHeaders from "../../../utils";
+import corsResponseHeaders from "../../../utils/cors";
 import { removeThing } from "../../../services/thingService";
 
-export const handler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log("Deleting thing by id event:", event);
   const thingId = event.pathParameters?.id as string;
   await removeThing(thingId);
