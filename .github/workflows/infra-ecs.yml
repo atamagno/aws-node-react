@@ -53,7 +53,7 @@ jobs:
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
           ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
-          DEPLOY_ECR: ${{ github.event.inputs.deploy_ecr }}
+          DEPLOY_ECR: ${{ github.event.inputs.deploy_ecr == 'true' }}
         run: |
           chmod u+x deploy-ecs.sh
           ./deploy-ecs.sh

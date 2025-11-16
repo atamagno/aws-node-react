@@ -45,4 +45,4 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
-      deploy_ecr: ${{ github.event.inputs.deploy_ecr }}
+      deploy_ecr: ${{ github.event.inputs.deploy_ecr == 'true' }}
