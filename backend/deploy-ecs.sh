@@ -63,6 +63,8 @@ aws cloudformation deploy \
   --tags $CFN_TAGS \
   --region $AWS_REGION
 
+checkIfFailed
+
 echo "Logging in to ECR..."
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
@@ -95,6 +97,8 @@ echo "Image: $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 #   --tags $CFN_TAGS \
 #   --region $AWS_REGION
 
+# checkIfFailed
+
 # getStackOutputs $VPC_STACK
 
 # VPC_ID=$Stack_VPC
@@ -124,6 +128,8 @@ aws cloudformation deploy \
   --tags $CFN_TAGS \
   --region $AWS_REGION
 
+checkIfFailed
+
 getStackOutputs $ELB_STACK
 
 ELB_SECURITY_GROUP_ID=$Stack_ELBSecurityGroupId
@@ -149,6 +155,8 @@ aws cloudformation deploy \
   --no-fail-on-empty-changeset \
   --tags $CFN_TAGS \
   --region $AWS_REGION
+
+checkIfFailed
 
 END_TIME=$(date -R)
 

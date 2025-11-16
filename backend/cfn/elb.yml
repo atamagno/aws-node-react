@@ -65,11 +65,10 @@ Resources:
       Targets: []
       HealthCheckIntervalSeconds: 30
       HealthCheckPath: /health
-      # HealthCheckEnabled: true
-      HealthCheckEnabled: false
+      HealthCheckEnabled: true
       UnhealthyThresholdCount: 2
       HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 5
+      HealthyThresholdCount: 2
       HealthCheckProtocol: HTTP
       HealthCheckPort: traffic-port
       Matcher:
