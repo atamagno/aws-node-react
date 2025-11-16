@@ -45,7 +45,11 @@ ELB_STACK="${PREFIX}elb-stack"
 ELB_CFN_TEMPLATE="cfn/elb.yml"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 
-echo "*** Deploying ECR Repository *** "
+echo "*** Building code ***"
+npm install
+npm run build:prod
+
+echo "*** Deploying ECR Repository ***"
 
 aws cloudformation deploy \
   --stack-name $ECR_STACK \
