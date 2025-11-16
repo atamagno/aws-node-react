@@ -18,6 +18,11 @@ on:
           - lambda
           - ecs
         default: lambda
+      deploy_ecr:
+        type: boolean
+        description: Deploy new ECR image?
+        required: false
+        default: false
       region:
         type: string
         description: Choose AWS region
@@ -41,3 +46,4 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
+      deploy_ecr: ${{ github.event.inputs.deploy_ecr }}

@@ -45,41 +45,43 @@ ELB_STACK="${PREFIX}elb-stack"
 ELB_CFN_TEMPLATE="cfn/elb.yml"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 
-echo "*** Building code ***"
-npm install
-npm run build:prod
+if [ "${DEPLOY_ECR}" = "true" ]; then
+  echo "*** Building code ***"
+  npm install
+  npm run build:prod
 
-echo "*** Deploying ECR Repository ***"
+  echo "*** Deploying ECR Repository ***"
 
-aws cloudformation deploy \
-  --stack-name $ECR_STACK \
-  --template-file $ECR_CFN_TEMPLATE \
-  --parameter-overrides \
-      pRepositoryName=$ECR_REPOSITORY_NAME \
-      pGitBranch=$GIT_BRANCH \
-      pGitHash=$GIT_HASH \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --no-fail-on-empty-changeset \
-  --tags $CFN_TAGS \
-  --region $AWS_REGION
+  aws cloudformation deploy \
+    --stack-name $ECR_STACK \
+    --template-file $ECR_CFN_TEMPLATE \
+    --parameter-overrides \
+        pRepositoryName=$ECR_REPOSITORY_NAME \
+        pGitBranch=$GIT_BRANCH \
+        pGitHash=$GIT_HASH \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --no-fail-on-empty-changeset \
+    --tags $CFN_TAGS \
+    --region $AWS_REGION
 
-checkIfFailed
+  checkIfFailed
 
-echo "Logging in to ECR..."
-aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+  echo "Logging in to ECR..."
+  aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-echo "Building Docker image..."
-docker build --provenance false -t $ECR_REPOSITORY_NAME .
+  echo "Building Docker image..."
+  docker build --provenance false -t $ECR_REPOSITORY_NAME .
 
-echo "Tagging image with $IMAGE_TAG..."
-docker tag $ECR_REPOSITORY_NAME:latest $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG
-docker tag $ECR_REPOSITORY_NAME:latest $ECR_REGISTRY/$ECR_REPOSITORY_NAME:latest
+  echo "Tagging image with $IMAGE_TAG..."
+  docker tag $ECR_REPOSITORY_NAME:latest $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG
+  docker tag $ECR_REPOSITORY_NAME:latest $ECR_REGISTRY/$ECR_REPOSITORY_NAME:latest
 
-echo "Pushing image to ECR..."
-docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAME --all-tags
+  echo "Pushing image to ECR..."
+  docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAME --all-tags
 
-echo "Image pushed to ECR successfully!"
-echo "Image: $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
+  echo "Image pushed to ECR successfully!"
+  echo "Image: $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
+fi
 
 # echo "*** Deploying VPC stack $VPC_STACK ***"
 

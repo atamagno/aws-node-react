@@ -15,6 +15,11 @@ on:
         type: string
         description: Choose AWS region
         default: ap-southeast-2
+      deploy_ecr:
+        type: boolean
+        description: Deploy new ECR image?
+        required: false
+        default: false
   workflow_call:
     inputs:
       environment:
@@ -23,6 +28,9 @@ on:
       region:
         required: true
         type: string
+      deploy_ecr:
+        required: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -46,6 +54,7 @@ jobs:
         env:
           AWS_REGION: ${{ github.event.inputs.region }}
           ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
+          DEPLOY_ECR: ${{ github.event.inputs.deploy_ecr }}
         run: |
           chmod u+x deploy-ecs.sh
           ./deploy-ecs.sh
