@@ -21,7 +21,6 @@ on:
       deploy_ecr:
         type: boolean
         description: Deploy new ECR image?
-        required: false
         default: false
       region:
         type: string
