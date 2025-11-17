@@ -43,6 +43,7 @@ jobs:
 
   deploy-infra:
     uses: ./.github/workflows/infra-ecs.yml
+    needs: deploy-common
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
