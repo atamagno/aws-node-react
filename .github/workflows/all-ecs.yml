@@ -34,6 +34,13 @@ on:
 permissions:
   id-token: write
 jobs:
+  deploy-common:
+    uses: ./.github/workflows/infra-common.yml
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
+      region: ${{ github.event.inputs.region }}
+
   deploy-infra:
     uses: ./.github/workflows/infra-ecs.yml
     secrets: inherit
@@ -49,3 +56,4 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
+      backend: ecs

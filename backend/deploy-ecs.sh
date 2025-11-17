@@ -32,10 +32,10 @@ ECR_REPOSITORY_NAME="${PREFIX}repository${POSTFIX}"
 ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 IMAGE_TAG="${GIT_HASH:-latest}" # TODO: add a condition to use latest if specified
 IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
-# VPC_CIDR="${VPC_CIDR:-10.0.0.0/16}"
+VPC_CIDR="${VPC_CIDR:-10.0.0.0/16}"
 
-# VPC_CFN_TEMPLATE="cfn/vpc.yml"
-# VPC_STACK="${PREFIX}vpc-stack"
+VPC_CFN_TEMPLATE="cfn/vpc.yml"
+VPC_STACK="${PREFIX}vpc-stack"
 ECR_CFN_TEMPLATE="cfn/ecr.yml"
 ECR_STACK="${PREFIX}ecr-repository-stack"
 DDB_STACK="${PREFIX}ddb-stack"
@@ -43,6 +43,8 @@ ECS_CFN_TEMPLATE="cfn/ecs.yml"
 ECS_STACK="${PREFIX}ecs-stack"
 ELB_STACK="${PREFIX}elb-stack"
 ELB_CFN_TEMPLATE="cfn/elb.yml"
+API_ECS_STACK="${PREFIX}api-ecs-stack"
+API_ECS_CFN_TEMPLATE="cfn/api-ecs.yml"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 
 if [ "${DEPLOY_ECR}" = "true" ]; then
@@ -83,35 +85,33 @@ if [ "${DEPLOY_ECR}" = "true" ]; then
   echo "Image: $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 fi
 
-# echo "*** Deploying VPC stack $VPC_STACK ***"
+echo "*** Deploying VPC stack $VPC_STACK ***"
 
-# aws cloudformation deploy \
-#   --stack-name $VPC_STACK \
-#   --template-file $VPC_CFN_TEMPLATE \
-#   --parameter-overrides \
-#       pAppName=$APP_NAME \
-#       pEnvironmentName=$ENVIRONMENT_NAME \
-#       pVpcCidr=$VPC_CIDR \
-#       pGitBranch=$GIT_BRANCH \
-#       pGitHash=$GIT_HASH \
-#   --capabilities CAPABILITY_NAMED_IAM \
-#   --no-fail-on-empty-changeset \
-#   --tags $CFN_TAGS \
-#   --region $AWS_REGION
+aws cloudformation deploy \
+  --stack-name $VPC_STACK \
+  --template-file $VPC_CFN_TEMPLATE \
+  --parameter-overrides \
+      pAppName=$APP_NAME \
+      pEnvironmentName=$ENVIRONMENT_NAME \
+      pVpcCidr=$VPC_CIDR \
+      pGitBranch=$GIT_BRANCH \
+      pGitHash=$GIT_HASH \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
+  --tags $CFN_TAGS \
+  --region $AWS_REGION
 
-# checkIfFailed
+checkIfFailed
 
-# getStackOutputs $VPC_STACK
+getStackOutputs $VPC_STACK
 
-# VPC_ID=$Stack_VPC
-# PUBLIC_SUBNET_IDS=$Stack_PublicSubnets
-# PRIVATE_SUBNET_IDS=$Stack_PrivateSubnets
-
-# echo "Using VPC $VPC_ID and subnets $PUBLIC_SUBNET_IDS"
+VPC_ID=$Stack_VPC
+PUBLIC_SUBNET_IDS=$Stack_PublicSubnets
+PRIVATE_SUBNET_IDS=$Stack_PrivateSubnets
 
 # get the default VPC ID
-VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[*].VpcId' --output text)
-PUBLIC_SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[*].SubnetId' --output text | tr '\t' ',')
+# VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[*].VpcId' --output text)
+# PUBLIC_SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[*].SubnetId' --output text | tr '\t' ',')
 
 echo "*** Deploying ELB stack $ELB_STACK ***"
 
@@ -122,7 +122,7 @@ aws cloudformation deploy \
       pAppName=$APP_NAME \
       pEnvironmentName=$ENVIRONMENT_NAME \
       pVpcId=$VPC_ID \
-      pPublicSubnetIds=$PUBLIC_SUBNET_IDS \
+      pPrivateSubnetIds=$PRIVATE_SUBNET_IDS \
       pGitBranch=$GIT_BRANCH \
       pGitHash=$GIT_HASH \
   --capabilities CAPABILITY_NAMED_IAM \
@@ -136,6 +136,8 @@ getStackOutputs $ELB_STACK
 
 ELB_SECURITY_GROUP_ID=$Stack_ELBSecurityGroupId
 ELB_TARGET_GROUP_A_ARN=$Stack_ELBTargetGroupAArn
+ELB_LISTENER_ARN=$Stack_ELBListenerArn
+VPC_LINK_SECURITY_GROUP_ID=$Stack_VPCLinkSecurityGroupId
 
 echo "*** Deploying ECS stack $ECS_STACK ***"
 
@@ -147,7 +149,7 @@ aws cloudformation deploy \
       pEnvironmentName=$ENVIRONMENT_NAME \
       pImageUri=$IMAGE_URI \
       pVpcId=$VPC_ID \
-      pPrivateSubnetIds=$PUBLIC_SUBNET_IDS \
+      pPrivateSubnetIds=$PRIVATE_SUBNET_IDS \
       pELBSecurityGroupId=$ELB_SECURITY_GROUP_ID \
       pTargetGroupArn=$ELB_TARGET_GROUP_A_ARN \
       pDdbStackName=$DDB_STACK \
@@ -159,6 +161,30 @@ aws cloudformation deploy \
   --region $AWS_REGION
 
 checkIfFailed
+
+echo "*** Deploying API ECS stack $API_ECS_STACK ***"
+
+aws cloudformation deploy \
+  --stack-name $API_ECS_STACK \
+  --template-file $API_ECS_CFN_TEMPLATE \
+  --parameter-overrides \
+      pAppName=$APP_NAME \
+      pEnvironmentName=$ENVIRONMENT_NAME \
+      pPrivateSubnetIds=$PRIVATE_SUBNET_IDS \
+      pELBListenerArn=$ELB_LISTENER_ARN \
+      pVPCLinkSecurityGroupId=$VPC_LINK_SECURITY_GROUP_ID \
+      pGitBranch=$GIT_BRANCH \
+      pGitHash=$GIT_HASH \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
+  --tags $CFN_TAGS \
+  --region $AWS_REGION
+
+checkIfFailed
+
+getStackOutputs $API_ECS_STACK
+
+echo "*** API Gateway Endpoint: $Stack_HttpApiStageUrl ***"
 
 END_TIME=$(date -R)
 

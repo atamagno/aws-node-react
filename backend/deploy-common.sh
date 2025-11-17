@@ -32,9 +32,10 @@ IMAGE_TAG="${GIT_HASH:-latest}"
 
 S3_DEPLOYMENT_BUCKET_NAME="${PREFIX}deployment${POSTFIX}"
 
+DDB_CFN_TEMPLATE="cfn/ddb.yaml"
 DDB_STACK="${PREFIX}ddb-stack"
-API_CFN_TEMPLATE="cfn/api-lambda.yaml"
-API_STACK="${PREFIX}api-lambda-stack"
+FRONTEND_STACK="${PREFIX}frontend-stack"
+FRONTEND_CFN_TEMPLATE="cfn/frontend.yaml"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 
 echo "*** Starting build and deployment ***"
@@ -45,40 +46,43 @@ echo "S3_BUCKET_NAME   : ${S3_DEPLOYMENT_BUCKET_NAME}"
 echo "GIT BRANCH       : ${GIT_BRANCH}"
 echo "GIT HASH         : ${GIT_HASH}"
 
-echo "*** Deploying API Gateway and Lambda Functions ***"
+if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_DDB}" = "true" ]; then
+  echo "*** Deploying DynamoDB Table ***"
 
-echo "*** Building code ***"
-npm install
-npm run build
+  aws cloudformation deploy \
+    --stack-name $DDB_STACK \
+    --template-file $DDB_CFN_TEMPLATE \
+    --parameter-overrides \
+        pAppName=$APP_NAME \
+        pEnvironmentName=$ENVIRONMENT_NAME \
+        pGitBranch=$GIT_BRANCH \
+        pGitHash=$GIT_HASH \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --no-fail-on-empty-changeset \
+    --tags $CFN_TAGS \
+    --region ${AWS_REGION}
 
-# Create S3 Bucket to store code
-echo "*** Creating S3 Bucket ***"
-aws s3api head-bucket --bucket "${S3_DEPLOYMENT_BUCKET_NAME}" 2>/dev/null || aws s3 mb s3://${S3_DEPLOYMENT_BUCKET_NAME}
+  checkIfFailed
+fi
 
-sam package \
-  --template-file ${API_CFN_TEMPLATE} \
-  --output-template-file cfn/api-lambda-packaged.yaml \
-  --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
-  --s3-prefix api \
-  --region ${AWS_REGION}
+if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_FE}" = "true" ]; then
+  echo "*** Deploying Frontend Stack ***"
 
-checkIfFailed
+  aws cloudformation deploy \
+    --stack-name $FRONTEND_STACK \
+    --template-file $FRONTEND_CFN_TEMPLATE \
+    --parameter-overrides \
+        pAppName=$APP_NAME \
+        pEnvironmentName=$ENVIRONMENT_NAME \
+        pGitBranch=$GIT_BRANCH \
+        pGitHash=$GIT_HASH \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --no-fail-on-empty-changeset \
+    --tags $CFN_TAGS \
+    --region ${AWS_REGION}
 
-sam deploy --template-file cfn/api-lambda-packaged.yaml \
-  --s3-bucket ${S3_DEPLOYMENT_BUCKET_NAME} \
-  --s3-prefix api \
-  --stack-name ${API_STACK} \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --region ${AWS_REGION}  \
-  --no-fail-on-empty-changeset \
-  --parameter-overrides \
-    ParameterKey=pAppName,ParameterValue=${APP_NAME} \
-    ParameterKey=pEnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \
-    ParameterKey=pDdbStackName,ParameterValue=${DDB_STACK} \
-    ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
-    ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
-
-checkIfFailed
+  checkIfFailed
+fi
 
 END_TIME=$(date -R)
 
