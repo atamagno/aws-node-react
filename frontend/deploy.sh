@@ -6,13 +6,8 @@ START_TIME=$(date -R)
 
 setVariablesFromParameters $1
 
-if [ -z "${AWS_REGION}" ]
-then
-  echo "AWS_REGION environment variable is not set. Aborting."
-  exit 1
-fi
-
 APP_NAME="aws-node-react"
+AWS_REGION="${AWS_REGION:-ap-southeast-2}"
 ENVIRONMENT_NAME="${ENVIRONMENT_NAME:-dev}"
 PREFIX="${APP_NAME}-${ENVIRONMENT_NAME}-"
 
@@ -22,10 +17,15 @@ getStackOutputs ${FRONTEND_STACK}
 FRONTEND_BUCKET_NAME=$Stack_FrontendBucketName
 FRONTEND_DISTRIBUTION_ID=$Stack_FrontendDistributionId
 
-API_STACK="${PREFIX}api-stack"
-getStackOutputs ${API_STACK}
-
-export VITE_REST_API_URL=$Stack_RestApiUrl
+if [ "${BACKEND}" = "ecs" ]; then
+  API_STACK="${PREFIX}api-ecs-stack"
+  getStackOutputs ${API_STACK}
+  export VITE_REST_API_URL=$Stack_HttpApiStageUrl
+else
+  API_STACK="${PREFIX}api-lambda-stack"
+  getStackOutputs ${API_STACK}
+  export VITE_REST_API_URL=$Stack_RestApiUrl
+fi
 
 echo "*** Building code ***"
 npm install

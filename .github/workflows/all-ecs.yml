@@ -15,6 +15,10 @@ on:
         type: string
         description: Choose AWS region
         default: ap-southeast-2
+      deploy_ecr:
+        type: boolean
+        description: Deploy new ECR image?
+        default: false
   workflow_call:
     inputs:
       environment:
@@ -23,16 +27,28 @@ on:
       region:
         required: true
         type: string
+      deploy_ecr:
+        required: true
+        type: boolean
 
 permissions:
   id-token: write
 jobs:
-  deploy-infra:
-    uses: ./.github/workflows/infra-ecs.yml
+  deploy-common:
+    uses: ./.github/workflows/infra-common.yml
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
+
+  deploy-infra:
+    uses: ./.github/workflows/infra-ecs.yml
+    needs: deploy-common
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
+      region: ${{ github.event.inputs.region }}
+      deploy_ecr: ${{ github.event.inputs.deploy_ecr == 'true' }}
 
   deploy-frontend:
     uses: ./.github/workflows/frontend.yml
@@ -41,3 +57,4 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
+      backend: ecs

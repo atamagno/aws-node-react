@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  pAppName:
+    Type: String
+    Description: Application Name deployed in this stack
+  pEnvironmentName:
+    Type: String
+    Default: dev
+    Description: The name of the specific stack deployment e.g. 'dev'
+  pPrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: List of private subnets for VPC Link
+  pELBListenerArn:
+    Type: String
+    Description: ARN of the ELB Listener
+  pVPCLinkSecurityGroupId:
+    Type: String
+    Description: Security Group ID of the VPC Link
+  pGitHash:
+    Type: String
+  pGitBranch:
+    Type: String
+
+Resources:
+  VPCLink:
+    Type: AWS::ApiGatewayV2::VpcLink
+    Properties:
+      Name: !Sub "${pAppName}-${pEnvironmentName}-vpc-link"
+      SubnetIds: !Ref pPrivateSubnetIds
+      SecurityGroupIds:
+        - !Ref pVPCLinkSecurityGroupId
+      Tags:
+        Name: !Sub "${pAppName}-${pEnvironmentName}-vpc-link"
+        Environment: !Ref pEnvironmentName
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${pAppName}-${pEnvironmentName}-http-api"
+      Description: HTTP API Gateway for ECS backend
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        AllowHeaders:
+          - "*"
+        MaxAge: 300
+      Tags:
+        Name: !Sub "${pAppName}-${pEnvironmentName}-http-api"
+        Environment: !Ref pEnvironmentName
+
+  HttpApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Ref pELBListenerArn
+      IntegrationMethod: ANY
+      ConnectionType: VPC_LINK
+      ConnectionId: !Ref VPCLink
+      PayloadFormatVersion: "1.0"
+
+  HttpApiRouteDefault:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "$default"
+      Target: !Sub "integrations/${HttpApiIntegration}"
+
+  HttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: "$default"
+      AutoDeploy: true
+      Description: Default stage with auto-deployment
+      Tags:
+        Name: !Sub "${pAppName}-${pEnvironmentName}-stage"
+        Environment: !Ref pEnvironmentName
+
+Outputs:
+  VPCLinkId:
+    Description: VPC Link ID
+    Value: !Ref VPCLink
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCLinkId"
+
+  HttpApiId:
+    Description: HTTP API Gateway ID
+    Value: !Ref HttpApi
+    Export:
+      Name: !Sub "${AWS::StackName}-HttpApiId"
+
+  HttpApiEndpoint:
+    Description: HTTP API Gateway Endpoint URL
+    Value: !GetAtt HttpApi.ApiEndpoint
+    Export:
+      Name: !Sub "${AWS::StackName}-HttpApiEndpoint"
+
+  HttpApiStageUrl:
+    Description: HTTP API Gateway Stage URL
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: !Sub "${AWS::StackName}-HttpApiStageUrl"
+
+  CodeRef:
+    Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
+    Description: Code Reference
+    Export:
+      Name: !Sub ${AWS::StackName}-CodeRef

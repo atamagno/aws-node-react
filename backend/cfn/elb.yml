@@ -12,9 +12,9 @@ Parameters:
   pVpcId:
     Type: String
     Description: VPC ID for security group
-  pPublicSubnetIds:
+  pPrivateSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
-    Description: List of the public subnets in the VPC
+    Description: List of the private subnets in the VPC
   pContainerPort:
     Type: Number
     Default: 4000
@@ -24,6 +24,21 @@ Parameters:
     Type: String
 
 Resources:
+  VPCLinkSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for VPC Link
+      GroupName: !Sub ${pAppName}-${pEnvironmentName}-vpc-link-sg
+      VpcId: !Ref pVpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${pAppName}-${pEnvironmentName}-vpc-link-sg"
+        - Key: Environment
+          Value: !Ref pEnvironmentName
+
   ELBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -34,17 +49,18 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          SourceSecurityGroupId: !Ref VPCLinkSecurityGroup
+          Description: Allow traffic from VPC Link only
 
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
-      Scheme: internet-facing
+      Scheme: internal
       IpAddressType: ipv4
       SecurityGroups:
         - !Ref ELBSecurityGroup
-      Subnets: !Ref pPublicSubnetIds
+      Subnets: !Ref pPrivateSubnetIds
       Name: !Sub "${pAppName}-${pEnvironmentName}-elb"
       Tags:
         - Key: Name
@@ -91,6 +107,12 @@ Resources:
           TargetGroupArn: !Ref ELBTargetGroupA
 
 Outputs:
+  VPCLinkSecurityGroupId:
+    Description: VPC Link Security Group ID
+    Value: !GetAtt VPCLinkSecurityGroup.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCLinkSecurityGroupId"
+
   ELBSecurityGroupId:
     Description: ELB Security Group ID
     Value: !GetAtt ELBSecurityGroup.GroupId
