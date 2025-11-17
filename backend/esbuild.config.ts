@@ -10,7 +10,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 (async () => {
   try {
-    const entryPoints = ["src/index.ts", ...samEntryPoints("cfn/api-lambda.yaml")];
+    const entryPoints = [...samEntryPoints("cfn/api-lambda.yaml")];
     console.log("Building with entry points:", entryPoints);
     const buildOptions: BuildOptions = {
       entryPoints,
