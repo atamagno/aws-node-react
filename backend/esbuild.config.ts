@@ -18,6 +18,7 @@ const isProd = process.env.NODE_ENV === "production";
       platform: "node",
       target: "node20",
       outdir: "dist",
+      outbase: "./src",
       minify: isProd,
       sourcemap: !isProd,
       external: [],
