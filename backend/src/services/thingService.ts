@@ -18,7 +18,7 @@ import docClient from "../lib/dynamodb/client";
 import { CreateThingDto, Thing } from "../types/Thing";
 
 // helper function to handle DynamoDB errors consistently
-const handleDbError = (operation: string, error: unknown): never => {
+export const handleDbError = (operation: string, error: unknown): never => {
   // log the error using the structured logger
   logger.error({ dbOperation: operation, error: error }, `DynamoDB operation failed: ${operation}`);
 
