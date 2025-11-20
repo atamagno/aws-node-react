@@ -52,6 +52,7 @@
     "typescript-eslint": "^8.46.1"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.935.0",
     "@aws-sdk/client-dynamodb": "^3.913.0",
     "@aws-sdk/lib-dynamodb": "^3.913.0",
     "@serverless/utils": "^6.15.0",

@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import express, { NextFunction, Request, Response } from "express";
 
 import logger from "./utils/logger";
+import authRoutes from "./routes/auth";
 import thingRoutes from "./routes/thing";
 import healthRoutes from "./routes/health";
 
@@ -56,6 +57,7 @@ app.use(limiter);
 // middleware to enable CORS with custom block logic
 app.use(cors());
 
+app.use("/", authRoutes);
 app.use("/", thingRoutes);
 
 app.get("/", (req, res) => {
