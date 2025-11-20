@@ -36,9 +36,9 @@ DDB_CFN_TEMPLATE="cfn/ddb.yaml"
 DDB_STACK="${PREFIX}ddb-stack"
 FRONTEND_STACK="${PREFIX}frontend-stack"
 FRONTEND_CFN_TEMPLATE="cfn/frontend.yaml"
+COGNITO_CFN_TEMPLATE="cfn/cognito.yaml"
+COGNITO_STACK="${PREFIX}cognito-stack"
 CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
-
-echo "*** Starting build and deployment ***"
 
 echo "AWS_REGION       : ${AWS_REGION}"
 echo "ENVIRONMENT_NAME : ${ENVIRONMENT_NAME}"
@@ -71,6 +71,25 @@ if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_FE}" = "true" ]; then
   aws cloudformation deploy \
     --stack-name $FRONTEND_STACK \
     --template-file $FRONTEND_CFN_TEMPLATE \
+    --parameter-overrides \
+        pAppName=$APP_NAME \
+        pEnvironmentName=$ENVIRONMENT_NAME \
+        pGitBranch=$GIT_BRANCH \
+        pGitHash=$GIT_HASH \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --no-fail-on-empty-changeset \
+    --tags $CFN_TAGS \
+    --region ${AWS_REGION}
+
+  checkIfFailed
+fi
+
+if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_COGNITO}" = "true" ]; then
+  echo "*** Deploying Cognito Stack ***"
+
+  aws cloudformation deploy \
+    --stack-name $COGNITO_STACK \
+    --template-file $COGNITO_CFN_TEMPLATE \
     --parameter-overrides \
         pAppName=$APP_NAME \
         pEnvironmentName=$ENVIRONMENT_NAME \
