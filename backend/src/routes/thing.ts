@@ -3,6 +3,7 @@ import { ZodError, z } from "zod";
 import { NextFunction, Request, Response, Router } from "express";
 
 import logger from "../utils/logger";
+import { authenticateToken } from "../middleware/auth";
 import { deleteThing, getThing, getThings, postThing, putThing } from "../controllers/thingController";
 
 const router = Router();
@@ -37,10 +38,10 @@ const validate = (schema: z.ZodType) => (req: Request, res: Response, next: Next
   }
 };
 
-router.get("/thing", getThings);
-router.get("/thing/:id", getThing);
-router.post("/thing", validate(CreateThingSchema), postThing);
-router.put("/thing", validate(UpdateThingSchema), putThing);
-router.delete("/thing/:id", deleteThing);
+router.get("/thing", authenticateToken, getThings);
+router.get("/thing/:id", authenticateToken, getThing);
+router.post("/thing", authenticateToken, validate(CreateThingSchema), postThing);
+router.put("/thing", authenticateToken, validate(UpdateThingSchema), putThing);
+router.delete("/thing/:id", authenticateToken, deleteThing);
 
 export default router;

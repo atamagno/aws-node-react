@@ -14,6 +14,7 @@ import healthRoutes from "./routes/health";
 declare module "express-serve-static-core" {
   interface Request {
     id: string;
+    userId?: string;
   }
 }
 
