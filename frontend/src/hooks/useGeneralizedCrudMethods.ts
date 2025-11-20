@@ -1,6 +1,6 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 
+import axios from "../lib/axios";
 import { LoadingStatus } from "../types/LoadingStatus";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

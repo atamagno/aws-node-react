@@ -11,6 +11,7 @@ AWS_REGION="${AWS_REGION:-ap-southeast-2}"
 ENVIRONMENT_NAME="${ENVIRONMENT_NAME:-dev}"
 PREFIX="${APP_NAME}-${ENVIRONMENT_NAME}-"
 
+COGNITO_STACK="${PREFIX}cognito-stack"
 FRONTEND_STACK="${PREFIX}frontend-stack"
 getStackOutputs ${FRONTEND_STACK}
 
@@ -26,6 +27,13 @@ else
   getStackOutputs ${API_STACK}
   export VITE_REST_API_URL=$Stack_RestApiUrl
 fi
+
+getStackOutputs ${COGNITO_STACK}
+export VITE_COGNITO_USER_POOL_ID=$Stack_UserPoolId
+export VITE_COGNITO_APP_CLIENT_DOMAIN=$Stack_UserPoolDomain
+export VITE_COGNITO_APP_CLIENT_ID=$Stack_UserPoolClientId
+
+export VITE_AWS_REGION=${AWS_REGION}
 
 echo "*** Building code ***"
 npm install

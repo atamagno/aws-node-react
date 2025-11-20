@@ -87,12 +87,16 @@ fi
 if [ -z "${DEPLOY_SPECIFIC}" ] || [ "${DEPLOY_COGNITO}" = "true" ]; then
   echo "*** Deploying Cognito Stack ***"
 
+  getStackOutputs ${FRONTEND_STACK}
+  WEB_DOMAIN_NAME=$Stack_FrontendDistributionDomainName
+
   aws cloudformation deploy \
     --stack-name $COGNITO_STACK \
     --template-file $COGNITO_CFN_TEMPLATE \
     --parameter-overrides \
         pAppName=$APP_NAME \
         pEnvironmentName=$ENVIRONMENT_NAME \
+        pWebDomainName=$WEB_DOMAIN_NAME \
         pGitBranch=$GIT_BRANCH \
         pGitHash=$GIT_HASH \
     --capabilities CAPABILITY_NAMED_IAM \

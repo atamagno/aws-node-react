@@ -15,6 +15,9 @@ Parameters:
   pGitBranch:
     Type: String
     Description: Git branch name
+  pWebDomainName:
+    Type: String
+    Description: Web application domain name for callback and logout URLs
 
 Resources:
   UserPool:
@@ -67,10 +70,23 @@ Resources:
       ClientName: !Sub "${pAppName}-${pEnvironmentName}-client"
       UserPoolId: !Ref UserPool
       GenerateSecret: false
+      AuthSessionValidity: 3
+      EnableTokenRevocation: true
+      EnablePropagateAdditionalUserContextData: false
       ExplicitAuthFlows:
-        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
-        - ALLOW_USER_SRP_AUTH
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs: [!Sub "https://${pWebDomainName}", "http://localhost:3000"]
+      LogoutURLs: [!Sub "https://${pWebDomainName}", "http://localhost:3000"]
+      SupportedIdentityProviders:
+        - COGNITO
       PreventUserExistenceErrors: ENABLED
       RefreshTokenValidity: 30
       AccessTokenValidity: 60
@@ -86,6 +102,20 @@ Resources:
       WriteAttributes:
         - email
         - name
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub "${AWS::Region}-${AWS::AccountId}-${pEnvironmentName}"
+      UserPoolId: !Ref UserPool
+      ManagedLoginVersion: 2
+
+  ManagedLoginBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties:
+      UserPoolId: !Ref UserPool
+      UseCognitoProvidedValues: true
+      ClientId: !Ref UserPoolClient
 
 Outputs:
   UserPoolId:
@@ -111,6 +141,12 @@ Outputs:
     Value: !GetAtt UserPool.ProviderURL
     Export:
       Name: !Sub ${AWS::StackName}-UserPoolProviderURL
+
+  UserPoolDomain:
+    Description: Cognito User Pool Domain
+    Value: !Ref UserPoolDomain
+    Export:
+      Name: !Sub ${AWS::StackName}-UserPoolDomain
 
   CodeRef:
     Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
