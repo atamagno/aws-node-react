@@ -17,8 +17,9 @@ const ThingAddForm = () => {
   };
 
   return (
-    <>
+    <div className="d-flex justify-content-center align-items-center gap-1 mb-3">
       <input
+        className="form-control w-50"
         placeholder="Description"
         value={description}
         onChange={(e) => {
@@ -26,10 +27,18 @@ const ThingAddForm = () => {
         }}
         required
       />
-      <button onClick={add} disabled={isAdding || !description.trim()}>
-        {isAdding ? "Adding Thing..." : "Add Thing"}
+      <button onClick={add} disabled={isAdding || !description.trim()} className="btn btn-primary">
+        {isAdding ? (
+          <>
+            <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            &nbsp;
+            <span role="status">Adding Thing...</span>
+          </>
+        ) : (
+          <span>Add Thing</span>
+        )}
       </button>
-    </>
+    </div>
   );
 };
 

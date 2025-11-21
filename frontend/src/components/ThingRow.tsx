@@ -18,16 +18,28 @@ const ThingRow = ({ thing }: { thing: Thing }) => {
 
   return (
     <tr>
-      <td onClick={() => navigate(`/thing/${thing.id}`)}>{thing.id}</td>
+      <td role="button" onClick={() => navigate(`/thing/${thing.id}`)}>
+        {thing.id}
+      </td>
       <td>{thing.description}</td>
-      <td>
-        <button onClick={deleteHandler} disabled={isDeleting}>
-          {isDeleting ? "Deleting..." : "Delete"}
+      <td className="text-end">
+        <button onClick={deleteHandler} disabled={isDeleting} className="btn btn-primary">
+          {isDeleting ? (
+            <>
+              <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+              &nbsp;
+              <span role="status">Deleting...</span>
+            </>
+          ) : (
+            <span>Delete</span>
+          )}
         </button>
+        &nbsp;
         <button
           onClick={() => {
             setThing(thing);
           }}
+          className="btn btn-outline-primary"
         >
           Update
         </button>
