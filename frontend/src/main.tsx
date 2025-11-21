@@ -6,7 +6,7 @@ import App from "./App.tsx";
 import config from "./config/config.ts";
 
 const cognitoAuthConfig = {
-  authority: `https://cognito-idp.ap-southeast-2.amazonaws.com/${config.cognitoUserPoolId}`,
+  authority: `https://cognito-idp.${config.awsRegion}.amazonaws.com/${config.cognitoUserPoolId}`,
   client_id: config.cognitoAppClientId,
   redirect_uri: encodeURI(`${window.location.protocol}//${window.location.host}`),
   response_type: "code",
