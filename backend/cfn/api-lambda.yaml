@@ -9,6 +9,8 @@ Parameters:
     Default: dev
   pDdbStackName:
     Type: String
+  pCognitoStackName:
+    Type: String
   pGitHash:
     Type: String
   pGitBranch:
@@ -35,6 +37,13 @@ Resources:
         AllowOrigin: "'*'"
         AllowMethods: "'OPTIONS,GET,POST,PUT,PATCH,DELETE'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn:
+              Fn::ImportValue: !Sub ${pCognitoStackName}-UserPoolArn
 
   ThingsLambdaRole:
     Type: "AWS::IAM::Role"
@@ -79,6 +88,10 @@ Resources:
             Method: GET
             Path: /thing
             RestApiId: !Ref ApiGatewayRestApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+              AuthorizationScopes:
+                - things-api/read
 
   GetThingByIdFunction:
     Type: AWS::Serverless::Function
@@ -93,6 +106,10 @@ Resources:
             Method: GET
             Path: /thing/{id}
             RestApiId: !Ref ApiGatewayRestApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+              AuthorizationScopes:
+                - things-api/read
 
   CreateThingFunction:
     Type: AWS::Serverless::Function
@@ -107,6 +124,10 @@ Resources:
             Method: POST
             Path: /thing
             RestApiId: !Ref ApiGatewayRestApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+              AuthorizationScopes:
+                - things-api/write
 
   UpdateThingFunction:
     Type: AWS::Serverless::Function
@@ -121,6 +142,10 @@ Resources:
             Method: PUT
             Path: /thing
             RestApiId: !Ref ApiGatewayRestApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+              AuthorizationScopes:
+                - things-api/write
 
   DeleteThingFunction:
     Type: AWS::Serverless::Function
@@ -135,6 +160,10 @@ Resources:
             Method: DELETE
             Path: /thing/{id}
             RestApiId: !Ref ApiGatewayRestApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+              AuthorizationScopes:
+                - things-api/write
 
 Outputs:
   RestApiUrl:

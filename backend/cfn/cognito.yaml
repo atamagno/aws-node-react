@@ -64,8 +64,21 @@ Resources:
         Environment: !Ref pEnvironmentName
         Application: !Ref pAppName
 
+  UserPoolResourceServer:
+    Type: AWS::Cognito::UserPoolResourceServer
+    Properties:
+      Identifier: things-api
+      Name: Things API
+      UserPoolId: !Ref UserPool
+      Scopes:
+        - ScopeName: read
+          ScopeDescription: Read access to things
+        - ScopeName: write
+          ScopeDescription: Write access to things
+
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
+    DependsOn: UserPoolResourceServer
     Properties:
       ClientName: !Sub "${pAppName}-${pEnvironmentName}-client"
       UserPoolId: !Ref UserPool
@@ -82,6 +95,8 @@ Resources:
         - openid
         - email
         - profile
+        - things-api/read
+        - things-api/write
       AllowedOAuthFlowsUserPoolClient: true
       CallbackURLs: [!Sub "https://${pWebDomainName}", "http://localhost:3000"]
       LogoutURLs: [!Sub "https://${pWebDomainName}", "http://localhost:3000"]
