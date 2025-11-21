@@ -33,6 +33,7 @@ ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 IMAGE_TAG="${GIT_HASH:-latest}" # TODO: add a condition to use latest if specified
 IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 VPC_CIDR="${VPC_CIDR:-10.0.0.0/16}"
+TASK_COUNT="${TASK_COUNT:-1}"
 
 COGNITO_STACK="${PREFIX}cognito-stack"
 VPC_CFN_TEMPLATE="cfn/vpc.yml"
@@ -155,6 +156,7 @@ aws cloudformation deploy \
       pTargetGroupArn=$ELB_TARGET_GROUP_A_ARN \
       pDdbStackName=$DDB_STACK \
       pCognitoStackName=$COGNITO_STACK \
+      pTaskCount=$TASK_COUNT \
       pGitBranch=$GIT_BRANCH \
       pGitHash=$GIT_HASH \
   --capabilities CAPABILITY_NAMED_IAM \

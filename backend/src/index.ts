@@ -9,6 +9,7 @@ import logger from "./utils/logger";
 import authRoutes from "./routes/auth";
 import thingRoutes from "./routes/thing";
 import healthRoutes from "./routes/health";
+import ecsMetadataRoutes from "./routes/ecsMetadata";
 
 // extend the Express Request interface to include id property
 declare module "express-serve-static-core" {
@@ -44,6 +45,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use("/", healthRoutes);
+app.use("/", ecsMetadataRoutes);
 
 // security middleware
 app.use(helmet());

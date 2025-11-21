@@ -31,6 +31,9 @@ Parameters:
   pContainerPort:
     Type: Number
     Default: 4000
+  pTaskCount:
+    Type: Number
+    Default: 1
   pGitHash:
     Type: String
   pGitBranch:
@@ -151,7 +154,7 @@ Resources:
     Properties:
       ServiceName: !Sub ${pAppName}-${pEnvironmentName}-EcsService
       Cluster: !Ref ECSCluster
-      DesiredCount: 1
+      DesiredCount: !Ref pTaskCount
       LaunchType: FARGATE
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
