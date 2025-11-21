@@ -1,8 +1,8 @@
-import { ZodError, z } from "zod";
+import { z } from "zod";
 
-import { NextFunction, Request, Response, Router } from "express";
+import { Router } from "express";
 
-import logger from "../utils/logger";
+import { validate } from "../middleware/validate";
 import { postConfirmSignUp, postSignIn, postSignUp } from "../controllers/authController";
 
 const router = Router();
@@ -28,27 +28,6 @@ const SignInSchema = z.object({
   email: z.email(),
   password: z.string().min(1, "Password is required"),
 });
-
-const validate = (schema: z.ZodType) => (req: Request, res: Response, next: NextFunction) => {
-  try {
-    req.body = schema.parse(req.body);
-    next();
-  } catch (error) {
-    if (error instanceof ZodError) {
-      logger.warn({ reqId: req.id, errors: error.issues }, "Request validation failed");
-      const formattedErrors = error.issues.map((e) => ({
-        field: e.path.join("."),
-        message: e.message,
-        code: e.code,
-      }));
-      return res.status(400).send({
-        message: "Validation failed",
-        errors: formattedErrors,
-      });
-    }
-    next(error);
-  }
-};
 
 router.post("/auth/signup", validate(SignUpSchema), postSignUp);
 router.post("/auth/confirm-signup", validate(ConfirmSignUpSchema), postConfirmSignUp);
