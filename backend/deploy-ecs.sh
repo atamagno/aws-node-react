@@ -137,7 +137,6 @@ checkIfFailed
 getStackOutputs $ELB_STACK
 
 ELB_SECURITY_GROUP_ID=$Stack_ELBSecurityGroupId
-ELB_TARGET_GROUP_A_ARN=$Stack_ELBTargetGroupAArn
 ELB_LISTENER_ARN=$Stack_ELBListenerArn
 VPC_LINK_SECURITY_GROUP_ID=$Stack_VPCLinkSecurityGroupId
 
@@ -153,7 +152,7 @@ aws cloudformation deploy \
       pVpcId=$VPC_ID \
       pPrivateSubnetIds=$PRIVATE_SUBNET_IDS \
       pELBSecurityGroupId=$ELB_SECURITY_GROUP_ID \
-      pTargetGroupArn=$ELB_TARGET_GROUP_A_ARN \
+      pELBStackName=$ELB_STACK \
       pDdbStackName=$DDB_STACK \
       pCognitoStackName=$COGNITO_STACK \
       pTaskCount=$TASK_COUNT \

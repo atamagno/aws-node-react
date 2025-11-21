@@ -95,6 +95,33 @@ Resources:
         - Key: Environment
           Value: !Ref pEnvironmentName
 
+  ELBTargetGroupB:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${pAppName}-${pEnvironmentName}-tg-b"
+      VpcId: !Ref pVpcId
+      TargetType: ip
+      Protocol: HTTP
+      IpAddressType: ipv4
+      ProtocolVersion: HTTP1
+      Port: !Sub ${pContainerPort}
+      Targets: []
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /health
+      HealthCheckEnabled: true
+      UnhealthyThresholdCount: 2
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: traffic-port
+      Matcher:
+        HttpCode: "200"
+      Tags:
+        - Key: Name
+          Value: !Sub "${pAppName}-${pEnvironmentName}-tg-b"
+        - Key: Environment
+          Value: !Ref pEnvironmentName
+
   ELBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -103,8 +130,14 @@ Resources:
       Port: 80
       DefaultActions:
         - Type: forward
-          Order: 1
-          TargetGroupArn: !Ref ELBTargetGroupA
+          ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn: !Ref ELBTargetGroupA
+                Weight: 50
+              - TargetGroupArn: !Ref ELBTargetGroupB
+                Weight: 50
+            TargetGroupStickinessConfig:
+              Enabled: false
 
 Outputs:
   VPCLinkSecurityGroupId:
@@ -142,6 +175,12 @@ Outputs:
     Value: !Ref ELBTargetGroupA
     Export:
       Name: !Sub "${AWS::StackName}-ELBTargetGroupAArn"
+
+  ELBTargetGroupBArn:
+    Description: ELB Target Group B ARN
+    Value: !Ref ELBTargetGroupB
+    Export:
+      Name: !Sub "${AWS::StackName}-ELBTargetGroupBArn"
 
   ELBListenerArn:
     Description: ELB Listener ARN

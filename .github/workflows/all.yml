@@ -21,7 +21,7 @@ on:
       deploy_ecr:
         type: boolean
         description: Deploy new ECR image?
-        default: false
+        default: true
       task_count:
         type: number
         description: Number of ECS tasks to run

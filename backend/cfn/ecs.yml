@@ -21,9 +21,9 @@ Parameters:
   pELBSecurityGroupId:
     Type: String
     Description: Security Group ID of the Load Balancer
-  pTargetGroupArn:
+  pELBStackName:
     Type: String
-    Description: ARN of the Target Group
+    Description: ELB Stack Name to import target group ARNs
   pDdbStackName:
     Type: String
   pCognitoStackName:
@@ -96,10 +96,10 @@ Resources:
         ExecuteCommandConfiguration:
           Logging: DEFAULT
 
-  TaskDefinition:
+  TaskDefinitionA:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub ${pAppName}-${pEnvironmentName}-TaskDefinition
+      Family: !Sub ${pAppName}-${pEnvironmentName}-a-TaskDefinition
       Cpu: "256"
       Memory: "512"
       NetworkMode: awsvpc
@@ -108,7 +108,7 @@ Resources:
       ExecutionRoleArn: !GetAtt IAMRoleEcsTaskExecutionRole.Arn
       TaskRoleArn: !GetAtt IAMRoleEcsTaskRole.Arn
       ContainerDefinitions:
-        - Name: !Sub ${pAppName}-${pEnvironmentName}-container
+        - Name: !Sub ${pAppName}-${pEnvironmentName}-a-container
           Image: !Sub ${pImageUri}
           PortMappings:
             - ContainerPort: !Sub ${pContainerPort}
@@ -132,15 +132,15 @@ Resources:
             LogDriver: awslogs
             Options:
               awslogs-create-group: true
-              awslogs-group: !Sub /ecs/${pAppName}-${pEnvironmentName}
+              awslogs-group: !Sub /ecs/${pAppName}-${pEnvironmentName}-a
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: ecs
 
-  ECSClusterSecurityGroup:
+  ECSClusterSecurityGroupA:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group for ECS Cluster
-      GroupName: !Sub ${pAppName}-${pEnvironmentName}-ecs-cluster-sg
+      GroupDescription: Security Group for ECS Service A
+      GroupName: !Sub ${pAppName}-${pEnvironmentName}-a-ecs-sg
       VpcId: !Ref pVpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -148,24 +148,98 @@ Resources:
           ToPort: !Sub ${pContainerPort}
           SourceSecurityGroupId: !Ref pELBSecurityGroupId
 
-  ECSService:
+  ECSServiceA:
     Type: AWS::ECS::Service
-    DependsOn: ECSClusterSecurityGroup
+    DependsOn: ECSClusterSecurityGroupA
     Properties:
-      ServiceName: !Sub ${pAppName}-${pEnvironmentName}-EcsService
+      ServiceName: !Sub ${pAppName}-${pEnvironmentName}-a-EcsService
       Cluster: !Ref ECSCluster
       DesiredCount: !Ref pTaskCount
       LaunchType: FARGATE
-      TaskDefinition: !Ref TaskDefinition
+      TaskDefinition: !Ref TaskDefinitionA
       LoadBalancers:
-        - ContainerName: !Sub ${pAppName}-${pEnvironmentName}-container
+        - ContainerName: !Sub ${pAppName}-${pEnvironmentName}-a-container
           ContainerPort: !Sub ${pContainerPort}
-          TargetGroupArn: !Sub ${pTargetGroupArn}
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${pELBStackName}-ELBTargetGroupAArn
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - !Ref ECSClusterSecurityGroup
+            - !Ref ECSClusterSecurityGroupA
+          Subnets: !Ref pPrivateSubnetIds
+
+  TaskDefinitionB:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${pAppName}-${pEnvironmentName}-b-TaskDefinition
+      Cpu: "256"
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt IAMRoleEcsTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt IAMRoleEcsTaskRole.Arn
+      ContainerDefinitions:
+        - Name: !Sub ${pAppName}-${pEnvironmentName}-b-container
+          Image: !Sub ${pImageUri}
+          PortMappings:
+            - ContainerPort: !Sub ${pContainerPort}
+              Protocol: tcp
+          Environment:
+            - Name: NODE_ENV
+              Value: !Sub ${pEnvironmentName}
+            - Name: PORT
+              Value: !Sub ${pContainerPort}
+            - Name: THINGS_TABLE_NAME
+              Value:
+                Fn::ImportValue: !Sub ${pDdbStackName}-ThingsTableName
+            - Name: COGNITO_USER_POOL_ID
+              Value:
+                Fn::ImportValue: !Sub ${pCognitoStackName}-UserPoolId
+            - Name: COGNITO_CLIENT_ID
+              Value:
+                Fn::ImportValue: !Sub ${pCognitoStackName}-UserPoolClientId
+          Essential: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${pAppName}-${pEnvironmentName}-b
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: ecs
+
+  ECSClusterSecurityGroupB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for ECS Service B
+      GroupName: !Sub ${pAppName}-${pEnvironmentName}-b-ecs-sg
+      VpcId: !Ref pVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Sub ${pContainerPort}
+          ToPort: !Sub ${pContainerPort}
+          SourceSecurityGroupId: !Ref pELBSecurityGroupId
+
+  ECSServiceB:
+    Type: AWS::ECS::Service
+    DependsOn: ECSClusterSecurityGroupB
+    Properties:
+      ServiceName: !Sub ${pAppName}-${pEnvironmentName}-b-EcsService
+      Cluster: !Ref ECSCluster
+      DesiredCount: !Ref pTaskCount
+      LaunchType: FARGATE
+      TaskDefinition: !Ref TaskDefinitionB
+      LoadBalancers:
+        - ContainerName: !Sub ${pAppName}-${pEnvironmentName}-b-container
+          ContainerPort: !Sub ${pContainerPort}
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${pELBStackName}-ELBTargetGroupBArn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref ECSClusterSecurityGroupB
           Subnets: !Ref pPrivateSubnetIds
 
 Outputs:
@@ -193,29 +267,53 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-EcsTaskExecutionRoleArn"
 
-  EcsTaskDefinitionArn:
-    Description: ECS Task Definition ARN
-    Value: !GetAtt TaskDefinition.TaskDefinitionArn
+  EcsTaskDefinitionAArn:
+    Description: ECS Task Definition A ARN
+    Value: !GetAtt TaskDefinitionA.TaskDefinitionArn
     Export:
-      Name: !Sub "${AWS::StackName}-EcsTaskDefinitionArn"
+      Name: !Sub "${AWS::StackName}-EcsTaskDefinitionAArn"
 
-  ECSClusterSecurityGroupId:
-    Description: ECS Cluster Security Group ID
-    Value: !GetAtt ECSClusterSecurityGroup.GroupId
+  EcsTaskDefinitionBArn:
+    Description: ECS Task Definition B ARN
+    Value: !GetAtt TaskDefinitionB.TaskDefinitionArn
     Export:
-      Name: !Sub "${AWS::StackName}-EcsClusterSecurityGroupId"
+      Name: !Sub "${AWS::StackName}-EcsTaskDefinitionBArn"
 
-  EcsServiceName:
-    Description: ECS Service Name
-    Value: !GetAtt ECSService.Name
+  ECSClusterSecurityGroupAId:
+    Description: ECS Cluster Security Group A ID
+    Value: !GetAtt ECSClusterSecurityGroupA.GroupId
     Export:
-      Name: !Sub "${AWS::StackName}-EcsServiceName"
+      Name: !Sub "${AWS::StackName}-EcsClusterSecurityGroupAId"
 
-  EcsServiceArn:
-    Description: ECS Service ARN
-    Value: !GetAtt ECSService.ServiceArn
+  ECSClusterSecurityGroupBId:
+    Description: ECS Cluster Security Group B ID
+    Value: !GetAtt ECSClusterSecurityGroupB.GroupId
     Export:
-      Name: !Sub "${AWS::StackName}-EcsServiceArn"
+      Name: !Sub "${AWS::StackName}-EcsClusterSecurityGroupBId"
+
+  EcsServiceAName:
+    Description: ECS Service A Name
+    Value: !GetAtt ECSServiceA.Name
+    Export:
+      Name: !Sub "${AWS::StackName}-EcsServiceAName"
+
+  EcsServiceAArn:
+    Description: ECS Service A ARN
+    Value: !GetAtt ECSServiceA.ServiceArn
+    Export:
+      Name: !Sub "${AWS::StackName}-EcsServiceAArn"
+
+  EcsServiceBName:
+    Description: ECS Service B Name
+    Value: !GetAtt ECSServiceB.Name
+    Export:
+      Name: !Sub "${AWS::StackName}-EcsServiceBName"
+
+  EcsServiceBArn:
+    Description: ECS Service B ARN
+    Value: !GetAtt ECSServiceB.ServiceArn
+    Export:
+      Name: !Sub "${AWS::StackName}-EcsServiceBArn"
 
   CodeRef:
     Value: !Join ["", [!Ref pGitBranch, ".", !Ref pGitHash]]
