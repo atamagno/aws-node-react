@@ -9,4 +9,6 @@ export default {
   awsRegion: (process.env.AWS_REGION as string) || "ap-southeast-2",
   thingsTableName: (process.env.THINGS_TABLE_NAME as string) || "things",
   frontendDistributionDomainName: (process.env.FRONTEND_DISTRIBUTION_DOMAIN_NAME as string) || "test.cloudfront.net",
+  cognitoUserPoolId: (process.env.COGNITO_USER_POOL_ID as string) || "",
+  cognitoClientId: (process.env.COGNITO_CLIENT_ID as string) || "",
 };

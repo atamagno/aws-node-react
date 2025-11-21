@@ -32,6 +32,7 @@ IMAGE_TAG="${GIT_HASH:-latest}"
 
 S3_DEPLOYMENT_BUCKET_NAME="${PREFIX}deployment${POSTFIX}"
 
+COGNITO_STACK="${PREFIX}cognito-stack"
 DDB_STACK="${PREFIX}ddb-stack"
 API_CFN_TEMPLATE="cfn/api-lambda.yaml"
 API_STACK="${PREFIX}api-lambda-stack"
@@ -75,6 +76,7 @@ sam deploy --template-file cfn/api-lambda-packaged.yaml \
     ParameterKey=pAppName,ParameterValue=${APP_NAME} \
     ParameterKey=pEnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \
     ParameterKey=pDdbStackName,ParameterValue=${DDB_STACK} \
+    ParameterKey=pCognitoStackName,ParameterValue=${COGNITO_STACK} \
     ParameterKey=pGitBranch,ParameterValue=${GIT_BRANCH} \
     ParameterKey=pGitHash,ParameterValue=${GIT_HASH}
 

@@ -26,6 +26,8 @@ Parameters:
     Description: ARN of the Target Group
   pDdbStackName:
     Type: String
+  pCognitoStackName:
+    Type: String
   pContainerPort:
     Type: Number
     Default: 4000
@@ -116,6 +118,12 @@ Resources:
             - Name: THINGS_TABLE_NAME
               Value:
                 Fn::ImportValue: !Sub ${pDdbStackName}-ThingsTableName
+            - Name: COGNITO_USER_POOL_ID
+              Value:
+                Fn::ImportValue: !Sub ${pCognitoStackName}-UserPoolId
+            - Name: COGNITO_CLIENT_ID
+              Value:
+                Fn::ImportValue: !Sub ${pCognitoStackName}-UserPoolClientId
           Essential: true
           LogConfiguration:
             LogDriver: awslogs
