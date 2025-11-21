@@ -9,6 +9,7 @@ import logger from "./utils/logger";
 import authRoutes from "./routes/auth";
 import thingRoutes from "./routes/thing";
 import healthRoutes from "./routes/health";
+import ecsMetadataRoutes from "./routes/ecsMetadata";
 
 // extend the Express Request interface to include id property
 declare module "express-serve-static-core" {
@@ -57,6 +58,8 @@ app.use(limiter);
 
 // middleware to enable CORS with custom block logic
 app.use(cors());
+
+app.use("/", ecsMetadataRoutes);
 
 app.use("/", authRoutes);
 app.use("/", thingRoutes);

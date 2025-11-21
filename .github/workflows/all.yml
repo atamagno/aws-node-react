@@ -21,7 +21,11 @@ on:
       deploy_ecr:
         type: boolean
         description: Deploy new ECR image?
-        default: false
+        default: true
+      task_count:
+        type: number
+        description: Number of ECS tasks to run
+        default: 1
       region:
         type: string
         description: Choose AWS region
@@ -46,3 +50,4 @@ jobs:
       environment: ${{ github.event.inputs.environment }}
       region: ${{ github.event.inputs.region }}
       deploy_ecr: ${{ github.event.inputs.deploy_ecr == 'true' }}
+      task_count: ${{ github.event.inputs.task_count }}
