@@ -45,7 +45,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use("/", healthRoutes);
-app.use("/", ecsMetadataRoutes);
 
 // security middleware
 app.use(helmet());
@@ -59,6 +58,8 @@ app.use(limiter);
 
 // middleware to enable CORS with custom block logic
 app.use(cors());
+
+app.use("/", ecsMetadataRoutes);
 
 app.use("/", authRoutes);
 app.use("/", thingRoutes);

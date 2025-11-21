@@ -41,14 +41,14 @@ export const getAvailabilityZone = async (req: Request, res: Response) => {
         if (containerResponse.ok) {
           const containerData = (await containerResponse.json()) as ECSContainerMetadata;
           // Container metadata doesn't have AZ, but we can indicate ECS
-          return {
+          return res.status(200).json({
             status: "partial",
             availabilityZone: "unknown",
             timestamp: new Date().toISOString(),
             message: "Running on ECS but availability zone not available from container metadata",
             source: "ECS Container Metadata",
             containerName: containerData.Name || "unknown",
-          };
+          });
         }
       }
     } catch (fallbackError) {
@@ -176,7 +176,7 @@ export const getStats = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error({ reqId: req.id, error }, "Error fetching ECS stats");
 
-    return res.status(503).send({
+    res.status(503).send({
       status: "error",
       stats: {},
       timestamp: new Date().toISOString(),
