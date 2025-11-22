@@ -1,6 +1,7 @@
 import ThingRow from "./ThingRow";
 import ThingAddForm from "./ThingAddForm";
 import ErrorBoundary from "./ErrorBoundary";
+import ThingDeleteForm from "./ThingDeleteForm";
 import ThingUpdateForm from "./ThingUpdateForm";
 import { LoadingStatus } from "../types/LoadingStatus";
 import { useThingsDataContext } from "../contexts/ThingsDataContext";
@@ -47,6 +48,7 @@ const ThingList = () => {
         </tbody>
       </table>
       <ThingUpdateForm />
+      <ThingDeleteForm />
     </>
   );
 };
