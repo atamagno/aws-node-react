@@ -40,6 +40,8 @@ const ThingRow = ({ thing }: { thing: Thing }) => {
             setThing(thing);
           }}
           className="btn btn-outline-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#updateThingModal"
         >
           Update
         </button>

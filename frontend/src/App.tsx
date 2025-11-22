@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import "./App.css";
