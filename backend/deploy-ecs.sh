@@ -52,7 +52,7 @@ CFN_TAGS="Application=${APP_NAME} Environment=${ENVIRONMENT_NAME}"
 if [ "${DEPLOY_ECR}" = "true" ]; then
   echo "*** Building code ***"
   npm install
-  npm run build:prod
+  npm run build:ecs
 
   echo "*** Deploying ECR Repository ***"
 
