@@ -1,16 +1,17 @@
 import dotenv from "dotenv";
 import { build } from "esbuild";
 import type { BuildOptions } from "esbuild";
-import esbuildPluginPino from "esbuild-plugin-pino";
 
 import samEntryPoints from "./plugins/esbuild/samEntryPoints";
 
 dotenv.config();
 
 const isProd = process.env.NODE_ENV === "production";
+const backend = process.env.BACKEND;
 
 (async () => {
   try {
+    console.log(`Building for backend target: ${backend}`);
     const entryPoints = ["src/index.ts", ...samEntryPoints("cfn/api-lambda.yaml")];
     console.log("Building with entry points:", entryPoints);
     const buildOptions: BuildOptions = {
@@ -21,12 +22,7 @@ const isProd = process.env.NODE_ENV === "production";
       outdir: "dist",
       minify: isProd,
       sourcemap: !isProd,
-      external: [],
-      plugins: [
-        esbuildPluginPino({
-          transports: ["pino-pretty"],
-        }),
-      ],
+      external: ["dtrace-provider", "mv"],
     };
     await build(buildOptions);
   } catch (error) {

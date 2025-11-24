@@ -5,12 +5,11 @@ import { LoadingStatus } from "../types/LoadingStatus";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
+const useGeneralizedCrudMethods = <T extends { id: string }>(url: string, initialValue: T) => {
   const [data, setData] = useState<T[]>([]);
+  const [singleData, setSingleData] = useState<T>(initialValue);
   const [error, setError] = useState("");
-  const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>(
-    LoadingStatus.loading
-  );
+  const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>(LoadingStatus.loading);
 
   if (!url || url.length === 0) {
     throw new Error("useGeneralizedCrudMethods no url passed in error");
@@ -40,21 +39,23 @@ const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
   };
 
   useEffect(() => {
-    const readRecordsUseEffect = async (callbackDone?: () => void) => {
-      try {
-        setLoadingStatus(LoadingStatus.loading);
-        await delay(1000);
-        const response = await axios.get(url);
-        setData(response.data);
-        setLoadingStatus(LoadingStatus.loaded);
-      } catch (e) {
-        setError(formatErrorString(e));
-        setLoadingStatus(LoadingStatus.error);
-      }
-      if (callbackDone) callbackDone();
-    };
-    readRecordsUseEffect();
+    readRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
+
+  const readRecordById = async (id: string, callbackDone?: () => void) => {
+    setLoadingStatus(LoadingStatus.loading);
+    try {
+      await delay(1000);
+      const response = await axios.get(`${url}/${id}`);
+      setSingleData(response.data);
+      setLoadingStatus(LoadingStatus.loaded);
+    } catch (e) {
+      setError(formatErrorString(e));
+      setLoadingStatus(LoadingStatus.error);
+    }
+    if (callbackDone) callbackDone();
+  };
 
   const createRecord = <U>(record: U, callbackDone?: () => void) => {
     const addData = async () => {
@@ -71,18 +72,13 @@ const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
     addData();
   };
 
-  const updateRecord = <U extends { id: string }>(
-    record: U,
-    callbackDone?: () => void
-  ) => {
+  const updateRecord = <U extends { id: string }>(record: U, callbackDone?: () => void) => {
     const updateData = async () => {
       try {
         await delay(1000);
         const response = await axios.put(url, record);
         const updatedRecord = response.data as T;
-        const updatedRecords = data.map((item) =>
-          item.id === updatedRecord.id ? updatedRecord : item
-        );
+        const updatedRecords = data.map((item) => (item.id === updatedRecord.id ? updatedRecord : item));
         setData(updatedRecords);
       } catch (e) {
         setError(formatErrorString(e));
@@ -108,11 +104,14 @@ const useGeneralizedCrudMethods = <T extends { id: string }>(url: string) => {
   };
 
   return {
+    singleData,
     data,
     error,
     loadingStatus,
+    setSingleData,
     createRecord,
     readRecords,
+    readRecordById,
     updateRecord,
     deleteRecord,
   };

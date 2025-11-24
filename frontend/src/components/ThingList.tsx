@@ -1,6 +1,7 @@
 import ThingRow from "./ThingRow";
 import ThingAddForm from "./ThingAddForm";
 import ErrorBoundary from "./ErrorBoundary";
+import ThingDeleteForm from "./ThingDeleteForm";
 import ThingUpdateForm from "./ThingUpdateForm";
 import { LoadingStatus } from "../types/LoadingStatus";
 import { useThingsDataContext } from "../contexts/ThingsDataContext";
@@ -18,24 +19,24 @@ const ThingList = () => {
 
   return (
     <>
-      <div>
-        <h5>Things List</h5>
+      <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
+        <div className="fw-medium fs-5">Things List</div>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            readThings();
+          }}
+        >
+          Get Things
+        </button>
       </div>
-      <button
-        onClick={() => {
-          readThings();
-        }}
-      >
-        Get Things
-      </button>
-      <br />
-      <br />
-      <ThingUpdateForm />
+      <ThingAddForm />
       <table className="table table-hover">
         <thead>
           <tr>
             <th>Id</th>
             <th>Description</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -46,7 +47,8 @@ const ThingList = () => {
           </ErrorBoundary>
         </tbody>
       </table>
-      <ThingAddForm />
+      <ThingUpdateForm />
+      <ThingDeleteForm />
     </>
   );
 };

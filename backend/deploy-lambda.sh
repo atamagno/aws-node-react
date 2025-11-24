@@ -50,7 +50,7 @@ echo "*** Deploying API Gateway and Lambda Functions ***"
 
 echo "*** Building code ***"
 npm install
-npm run build
+npm run build:lambda
 
 # Create S3 Bucket to store code
 echo "*** Creating S3 Bucket ***"
