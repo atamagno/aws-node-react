@@ -23,7 +23,6 @@ const ThingDetail = () => {
     return <div>Error loading thing</div>;
   }
 
-  console.log("ThingDetail thing:", thing);
   if (!thing) {
     return <div>Thing not found.</div>;
   }

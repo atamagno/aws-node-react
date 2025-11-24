@@ -28,6 +28,10 @@ function App() {
     return <div>Loading...</div>;
   }
 
+  if (auth.error) {
+    return <div>Authentication Error: {auth.error.message}</div>;
+  }
+
   if (!auth.isAuthenticated) {
     return (
       <ErrorBoundary>

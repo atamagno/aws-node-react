@@ -1,4 +1,5 @@
 import bunyan from "bunyan";
+import bunyanFormat from "bunyan-format";
 
 // configuration for development and production environments
 const logLevel = (process.env.LOG_LEVEL || "info") as bunyan.LogLevel;
@@ -9,7 +10,7 @@ const streams: bunyan.Stream[] =
         {
           // in development, use pretty printing to stdout
           level: logLevel,
-          stream: process.stdout,
+          stream: bunyanFormat({ outputMode: "short", color: true }),
         },
       ]
     : [
