@@ -1,17 +1,11 @@
-import config from "../config/config";
+import config from "../config";
 import type { CreateThingDto, Thing } from "../types/Thing";
 import useGeneralizedCrudMethods from "./useGeneralizedCrudMethods";
 
 const useThingsData = () => {
-  const {
-    data,
-    error,
-    loadingStatus,
-    createRecord,
-    readRecords,
-    updateRecord,
-    deleteRecord,
-  } = useGeneralizedCrudMethods<Thing>(`${config.restApiUrl}/thing`);
+  const initialThing: Thing = { id: "", description: "" };
+  const { singleData, data, error, loadingStatus, setSingleData, createRecord, readRecords, readRecordById, updateRecord, deleteRecord } =
+    useGeneralizedCrudMethods<Thing>(`${config.restApiUrl}/thing`, initialThing);
 
   const createThing = (thing: CreateThingDto, callbackDone: () => void) => {
     createRecord<CreateThingDto>(thing, callbackDone);
@@ -19,6 +13,10 @@ const useThingsData = () => {
 
   const readThings = () => {
     readRecords();
+  };
+
+  const readThingById = (id: string) => {
+    readRecordById(id);
   };
 
   const updateThing = (thing: Thing, callbackDone: () => void) => {
@@ -30,11 +28,14 @@ const useThingsData = () => {
   };
 
   return {
+    thing: singleData,
     things: data,
     loadingStatus,
     error,
+    setThing: setSingleData,
     createThing,
     readThings,
+    readThingById,
     updateThing,
     deleteThing,
   };

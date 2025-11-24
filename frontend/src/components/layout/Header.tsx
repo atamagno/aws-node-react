@@ -1,21 +1,14 @@
 import { useNavigate } from "react-router";
 import { useAuth } from "react-oidc-context";
 
-import config from "../../config/config";
+import { signOutRedirect } from "../../lib/auth";
 
 const Header = () => {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  const signOutRedirect = async () => {
-    // Remove user from local OIDC session storage
-    await auth.removeUser();
-
-    // Redirect to Cognito logout to end the server-side session
-    const clientId = config.cognitoAppClientId;
-    const logoutUri = `${window.location.protocol}//${window.location.host}`;
-    const cognitoDomain = `https://${config.cognitoClientDomain}.auth.${config.awsRegion}.amazoncognito.com`;
-    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+  const handleSignOut = () => {
+    signOutRedirect(auth.removeUser);
   };
 
   return (
@@ -27,7 +20,7 @@ const Header = () => {
         {auth.isAuthenticated ? (
           <div className="d-flex align-items-center gap-3">
             <span>Hello, {auth.user?.profile.email}</span>
-            <button className="btn btn-primary" onClick={() => signOutRedirect()}>
+            <button className="btn btn-primary" onClick={handleSignOut}>
               Sign out
             </button>
           </div>

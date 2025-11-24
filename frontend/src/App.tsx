@@ -5,9 +5,11 @@ import { BrowserRouter, Route, Routes } from "react-router";
 
 import "./App.css";
 import Things from "./components/Things";
+import Welcome from "./components/Welcome";
 import { setAuthToken } from "./lib/axios";
 import Layout from "./components/layout/Layout";
 import ThingDetail from "./components/ThingDetail";
+import PageNotFound from "./components/PageNotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThingsDataProvider } from "./contexts/ThingsDataContext";
 
@@ -26,8 +28,16 @@ function App() {
     return <div>Loading...</div>;
   }
 
-  if (auth.error) {
-    return <div>Auth error: {auth.error.message}</div>;
+  if (!auth.isAuthenticated) {
+    return (
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Layout>
+            <Welcome />
+          </Layout>
+        </BrowserRouter>
+      </ErrorBoundary>
+    );
   }
 
   return (
@@ -38,6 +48,7 @@ function App() {
             <Routes>
               <Route index element={<Things />} />
               <Route path="/thing/:id" element={<ThingDetail />} />
+              <Route path="*" element={<PageNotFound />} />
             </Routes>
           </Layout>
         </ThingsDataProvider>
